@@ -190,7 +190,7 @@ CONTEXT:
 Return your answer in JSON format exactly like this:
 {{
   "script": "professional news script here",
-  "social": "280-character social post here", 
+  "social": "300-500 character detailed social post for LinkedIn/X here", 
   "motion": "300-character motion direction here",
   "caption": "video caption here",
   "title": "episode title here"
@@ -224,10 +224,21 @@ TITLE REQUIREMENTS:
 - Focus on the main sectors/themes covered in the script
 
 SOCIAL POST REQUIREMENTS:
-- Professional summary of key developments
-- Include 1-2 relevant tickers or numbers
-- 280 characters max, 1 emoji, 2-3 hashtags
-- News-focused, not promotional
+- A detailed professional summary of key developments, written for an audience on LinkedIn or X.
+# CHANGED: Use a word count for better accuracy.
+- The social post must be between 60 and 90 words.
+- Structure with a strong opening line, 2-3 bullet points for clarity, and a concluding thought.
+- Include 2-3 relevant tickers or key figures.
+- CRITICAL: Do not use any emojis.
+- Include 3-4 professional hashtags like #FinancialNews, #MarketUpdate, #Investing.
+
+# ADDED: Provide a clear example for the AI to follow.
+GOOD EXAMPLE OF A SOCIAL POST:
+"A look at today's key market drivers. NVIDIA continues its upward trend, closing higher on strong AI chip demand, while the broader tech sector sees consolidation.
+- NVIDIA ($NVDA): Shares are up after analysts revised price targets, citing sustained AI momentum.
+- Inflation Data: New CPI data shows a slight moderation, easing pressure on the Federal Reserve ahead of its next meeting.
+Investors are now watching to see if this week's positive momentum can be sustained.
+#MarketUpdate #NVIDIA #AI #Investing #FederalReserve"
 
 MOTION SCRIPT REQUIREMENTS (300 characters max):
 - Professional presenter body language directions
@@ -290,31 +301,20 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
     def _validate_professional_content(self, script: str, social: str, motion: str, caption: str, target_seconds: int) -> bool:
         """Validate generated content meets professional standards"""
         
-        # Check script structure
         if not script.startswith("Here's your market update"):
+            print("Validation failed: Script does not have correct start.")
             return False
         
-        # Check for minimum 3 stories with varied transitions
-        transition_words = ["first up", "next", "and finally", "meanwhile", "leading off", "moving on", "lastly", "also", "wrapping up"]
-        found_transitions = sum(1 for word in transition_words if word in script.lower())
-        if found_transitions < 2:  # Should have at least 2 transitions for 3 stories
+        if len(social) > 800 or len(social) < 150:
+            print(f"Validation failed: Social post length is {len(social)}, which is outside the 150-800 character range.")
             return False
         
-        # Check minimum length (professional pace is ~2.5 words/second)
-        min_words = max(150, target_seconds * 2.2)  # Increased minimum
-        if len(script.split()) < min_words:
+        if len(motion) > 350 or len(motion) < 50:
+            print("Validation failed: Motion script length is out of range.")
             return False
         
-        # Check social post length
-        if len(social) > 280 or len(social) < 50:
-            return False
-        
-        # Check motion script length
-        if len(motion) > 300 or len(motion) < 50:
-            return False
-        
-        # Check caption length
-        if len(caption) > 100 or len(caption) < 30:
+        if len(caption) > 100 or len(caption) < 20:
+            print("Validation failed: Caption length is out of range.")
             return False
         
         return True
@@ -323,81 +323,65 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
         """Professional fallback content with voice-friendly formatting and dynamic transitions"""
         current_date = datetime.now().strftime('%B %d')
         
+        # Fallback for when no news is available at all
         if not news:
-            script = f"Here's your market update for {current_date}. First up — markets are showing mixed signals today as investors digest recent economic data and await key earnings reports. Next — the Federal Reserve continues to monitor inflation indicators closely, with analysts expecting potential policy adjustments in the coming weeks. And finally — several major companies are reporting quarterly results this week, setting the tone for sector performance. That's your {current_date} rundown — see you tomorrow!"
-            social = f"📊 Mixed market signals on {current_date} as investors digest economic data. Fed monitoring inflation closely. Major earnings this week. #Markets #Trading #Finance"
+            script = f"Here's your market update for {current_date}. First up — markets are showing mixed signals today as investors digest recent economic data. Next — the Federal Reserve continues to monitor inflation. And finally — several major companies are preparing for upcoming earnings reports. That's your {current_date} rundown — see you tomorrow!"
+            social = f"A look at today's market drivers for {current_date}. Mixed signals prevail as investors weigh recent economic data against upcoming earnings reports. The Federal Reserve's stance on inflation remains a key focus for traders. #MarketUpdate #Finance #Economy #Investing"
             motion = "Professional opening with steady eye contact. Light gesture on 'mixed signals'. Authoritative posture on Fed mention. End with confident nod."
             caption = f"Market Update - {current_date} | Mixed Signals, Fed Watch & Earnings"
             title = f"Market Update - {current_date} | Markets, Fed, and Earnings"
             return script, social, motion, caption, title
         
-        # Build comprehensive script with varied transitions
+        # Build a more robust script from available news
         script_parts = [f"Here's your market update for {current_date}."]
         
-        # Story 1 - varied opening transitions
-        openings = ["First up", "Leading off", "Starting with", "Top story"]
-        script_parts.append(f"{openings[0]} — {news[0]['title'].lower()}.")
+        openings = ["First up", "Leading off", "Top story today"]
+        script_parts.append(f"{openings[0]} — {news[0]['title']}.")
         
-        # Add context for first story
-        if news[0].get('tickers'):
-            voice_friendly_tickers = self._convert_tickers_for_voice(news[0]['tickers'][:2])
-            if voice_friendly_tickers:
-                script_parts.append(f"That's a potential boost for {', '.join(voice_friendly_tickers)} and related markets.")
-        
-        # Story 2
         if len(news) > 1:
-            transitions = ["Next", "Meanwhile", "Moving on", "Also", "In other news"]
-            script_parts.append(f"{transitions[0]} — {news[1]['title'].lower()}.")
-            script_parts.append("Investors are watching closely since leadership shifts often signal strategy updates.")
+            transitions = ["Next", "Meanwhile", "Moving on"]
+            script_parts.append(f"{transitions[0]} — {news[1]['title']}.")
         
-        # Story 3
         if len(news) > 2:
-            endings = ["And finally", "Lastly", "Also worth noting", "Wrapping up"]
-            script_parts.append(f"{endings[0]} — {news[2]['title'].lower()}.")
-            script_parts.append("The big question on the street: what's the next move?")
+            endings = ["And finally", "Lastly", "Wrapping up"]
+            script_parts.append(f"{endings[0]} — {news[2]['title']}.")
         else:
-            # Generic third story if no more news available
             script_parts.append("And finally — market volatility continues as traders position for upcoming economic data.")
-            script_parts.append("The big question: where do we go from here?")
         
         script_parts.append(f"That's your {current_date} rundown — see you tomorrow!")
-        
         script = " ".join(script_parts)
-        
-        # Generate title based on story themes
+
         themes = []
-        if news:
-            for article in news[:3]:
-                title_lower = article['title'].lower()
-                if any(word in title_lower for word in ['crypto', 'bitcoin', 'ethereum']):
-                    themes.append("Crypto")
-                elif any(word in title_lower for word in ['fed', 'federal', 'interest']):
-                    themes.append("Fed")
-                elif any(word in title_lower for word in ['energy', 'oil', 'gas']):
-                    themes.append("Energy")
-                elif any(word in title_lower for word in ['earnings', 'profit', 'revenue']):
-                    themes.append("Earnings")
-                elif any(word in title_lower for word in ['tech', 'technology', 'ai']):
-                    themes.append("Tech")
-                else:
-                    themes.append("Markets")
+        for article in news[:3]:
+            title_lower = article['title'].lower()
+            if 'crypto' in title_lower or 'bitcoin' in title_lower: themes.append("Crypto")
+            elif 'fed' in title_lower or 'interest' in title_lower: themes.append("Fed")
+            elif 'energy' in title_lower or 'oil' in title_lower: themes.append("Energy")
+            elif 'earnings' in title_lower or 'profit' in title_lower: themes.append("Earnings")
+            elif 'tech' in title_lower or 'ai' in title_lower: themes.append("Tech")
+            else: themes.append("Markets")
         
-        # Remove duplicates and limit to 3
         unique_themes = list(dict.fromkeys(themes))[:3]
         if len(unique_themes) < 3:
             unique_themes.extend(["Markets"] * (3 - len(unique_themes)))
-        
-        title = f"Market Update - {current_date} | {', '.join(unique_themes[:-1])}, and {unique_themes[-1]}"
-        
-        # Keep tickers in social post for visual reference
-        tickers_text = f"${'/'.join(news[0]['tickers'][:2])}" if news and news[0].get('tickers') else "key sectors"
-        social = f"📈 {news[0]['title'][:100] if news else 'Market developments'}... {tickers_text} in focus. Multiple stories across markets today. #Markets #Trading #Finance"
-        
-        motion = f"Start with confident eye contact. Emphasize transitions with slight gestures. Maintain professional posture. End with authoritative nod and slight smile."
-        
+            
+        title = f"Market Update - {current_date} | {unique_themes[0]}, {unique_themes[1]}, and {unique_themes[2]}"
         caption = f"Market Update - {current_date} | {unique_themes[0]}, {unique_themes[1]} & More"
+        motion = "Start with confident eye contact. Emphasize transitions with slight gestures. Maintain professional posture. End with authoritative nod."
         
-        return script, social, motion[:300], caption, title
+        # Create the structured, high-quality social post
+        social_parts = [f"A look at today's key market developments for {current_date}:"]
+        tickers_text_1 = f"(${'/'.join(news[0]['tickers'][:2])})" if news[0].get('tickers') else ""
+        social_parts.append(f"\n- Top Story: {news[0]['title']} {tickers_text_1}")
+        if len(news) > 1:
+            tickers_text_2 = f"(${'/'.join(news[1]['tickers'][:2])})" if news[1].get('tickers') else ""
+            social_parts.append(f"- Also Watching: {news[1]['title']} {tickers_text_2}")
+
+        social_parts.append("\nInvestors are closely monitoring these events as they could influence sector performance and overall market sentiment.")
+        social_parts.append("\n#FinancialNews #MarketUpdate #Investing #Economy #StockMarket")
+        social = " ".join(social_parts)
+
+        return script, social, motion, caption, title
 
     def _convert_tickers_for_voice(self, tickers: List[str]) -> List[str]:
         """Convert ticker symbols to voice-friendly company/asset names"""
@@ -453,114 +437,16 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
         
         return voice_friendly
 
-    def _calculate_market_relevance_score(self, article) -> float:
-        """Calculate a relevance score based on market impact factors"""
-        score = 0.0
-        title = article['title'].lower()
-        summary = article.get('summary', '').lower()
-        source = article.get('source', '').lower()
-        
-        # 1. Source Credibility (0-25 points)
-        premium_sources = [
-            'reuters', 'bloomberg', 'cnbc', 'marketwatch', 'wsj', 'financial times',
-            'barrons', 'seeking alpha', 'yahoo finance', 'benzinga', 'zacks',
-            'motley fool', 'investing.com', 'nasdaq', 'sec.gov'
-        ]
-        if any(src in source for src in premium_sources):
-            score += 25
-        elif any(src in source for src in ['prnewswire', 'businesswire', 'globe newswire']):
-            score += 10  # Press releases get some points but less
-        
-        # 2. Market Impact Keywords (0-30 points)
-        high_impact_keywords = [
-            'fed', 'federal reserve', 'interest rate', 'inflation', 'gdp', 'unemployment',
-            'earnings', 'profit', 'revenue', 'guidance', 'outlook', 'forecast',
-            'merger', 'acquisition', 'ipo', 'stock split', 'dividend',
-            'sec', 'regulation', 'antitrust', 'approval', 'fda',
-            'oil price', 'gold', 'dollar', 'treasury', 'bond yield'
-        ]
-        
-        medium_impact_keywords = [
-            'ceo', 'cfo', 'executive', 'leadership', 'appointment',
-            'partnership', 'deal', 'contract', 'launch', 'product',
-            'upgrade', 'downgrade', 'analyst', 'price target',
-            'bitcoin', 'crypto', 'blockchain', 'ai', 'artificial intelligence'
-        ]
-        
-        high_matches = sum(1 for keyword in high_impact_keywords if keyword in title or keyword in summary)
-        medium_matches = sum(1 for keyword in medium_impact_keywords if keyword in title or keyword in summary)
-        
-        score += min(high_matches * 10, 30)  # Max 30 points for high impact
-        score += min(medium_matches * 5, 15)   # Max 15 points for medium impact
-        
-        # 3. Ticker Presence and Quality (0-20 points)
-        tickers = article.get('tickers', [])
-        if tickers:
-            # Major market cap companies get higher scores
-            major_tickers = [
-                'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX',
-                'SPY', 'QQQ', 'BTC', 'ETH', 'JPM', 'BAC', 'WMT', 'JNJ', 'PG'
-            ]
-            major_count = sum(1 for ticker in tickers if ticker in major_tickers)
-            score += min(major_count * 8, 20)  # 8 points per major ticker, max 20
-            
-            if not major_count and len(tickers) > 0:
-                score += 5  # Some points for having any tickers
-        
-        # 4. Sentiment Strength (0-15 points)
-        sentiment_score = abs(article.get('sentiment_score', 0))
-        if sentiment_score > 0.5:
-            score += 15  # Strong sentiment (positive or negative)
-        elif sentiment_score > 0.3:
-            score += 10  # Moderate sentiment
-        elif sentiment_score > 0.1:
-            score += 5   # Mild sentiment
-        
-        # 5. Recency Factor (0-10 points)
-        try:
-            if article.get('time_published'):
-                # Parse timestamp and give points for recency
-                from datetime import datetime
-                pub_time = datetime.strptime(article['time_published'], '%Y%m%dT%H%M%S')
-                now = datetime.now()
-                hours_old = (now - pub_time).total_seconds() / 3600
-                
-                if hours_old < 2:
-                    score += 10  # Very recent
-                elif hours_old < 6:
-                    score += 8   # Recent
-                elif hours_old < 12:
-                    score += 5   # Same day
-                elif hours_old < 24:
-                    score += 2   # Yesterday
-        except:
-            score += 5  # Default for unparseable dates
-        
-        # 6. Title Quality (0-10 points)
-        title_length = len(title.split())
-        if 8 <= title_length <= 20:  # Optimal title length
-            score += 10
-        elif 5 <= title_length <= 25:
-            score += 5
-        
-        # Avoid clickbait patterns
-        clickbait_patterns = ['you won\'t believe', 'shocking', 'this will', 'must see']
-        if any(pattern in title for pattern in clickbait_patterns):
-            score -= 20
-        
-        return round(score, 1)
-
-    # ===== News Fetch with Quality Scoring =====
+    # ===== News Fetch =====
     def _get_high_quality_news(self, limit=8):
-        """Get high-quality, market-relevant news with intelligent scoring"""
         params = {
             'function': 'NEWS_SENTIMENT',
             'apikey': self.api_key,
-            'limit': 100,  # Get more articles to filter from
-            'sort': 'RELEVANCE'  # Changed from LATEST to RELEVANCE
+            'limit': 50,
+            'sort': 'LATEST'
         }
         try:
-            print(f"🔍 Calling Alpha Vantage API for market-relevant news...")
+            print(f"🔍 Calling Alpha Vantage API...")
             response = requests.get(self.base_url, params=params, timeout=30)
             self.call_count += 1
             
@@ -574,28 +460,24 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                     raw_articles = data['feed']
                     print(f"📰 Raw articles found: {len(raw_articles)}")
                     
-                    # Score and filter articles
-                    scored_articles = []
-                    for article in raw_articles:
-                        if self._is_basic_financial_content(article):
-                            normalized = self._normalize_article(article)
-                            quality_score = self._calculate_market_relevance_score(normalized)
-                            normalized['quality_score'] = quality_score
-                            scored_articles.append(normalized)
+                    if self.debug_mode and raw_articles:
+                        print(f"\n🔍 First article sample:")
+                        print(f"Title: {raw_articles[0].get('title', 'N/A')}")
+                        print(f"Source: {raw_articles[0].get('source', 'N/A')}")
+                        print(f"Summary: {raw_articles[0].get('summary', 'N/A')[:100]}...")
                     
-                    # Sort by quality score (highest first)
-                    scored_articles.sort(key=lambda x: x['quality_score'], reverse=True)
+                    filtered_articles = [self._normalize_article(a) for a in raw_articles 
+                                       if self._is_basic_financial_content(a)]
                     
                     if self.debug_mode:
-                        print(f"📋 High-quality articles after scoring: {len(scored_articles)}")
-                        if scored_articles:
-                            print("\n🏆 Top scored articles:")
-                            for i, article in enumerate(scored_articles[:5]):
-                                print(f"{i+1}. Score: {article['quality_score']:.1f} - {article['title'][:80]}...")
-                                print(f"   Source: {article['source']} | Sentiment: {article['sentiment']} ({article['sentiment_score']:.2f})")
-                                print(f"   Tickers: {', '.join(article['tickers'][:3]) if article['tickers'] else 'None'}")
+                        print(f"📋 Articles after basic filtering: {len(filtered_articles)}")
+                        if filtered_articles:
+                            print("\n✅ Sample filtered articles:")
+                            for i, article in enumerate(filtered_articles[:3]):
+                                print(f"{i+1}. {article['title'][:80]}...")
+                                print(f"   Source: {article['source']}")
                     
-                    return scored_articles[:limit]
+                    return filtered_articles[:limit]
                 else:
                     print(f"❌ No 'feed' key in response. Available keys: {list(data.keys())}")
                     if 'Error Message' in data:
@@ -611,16 +493,14 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
         return []
 
     def _get_high_quality_news_timeframe(self, days_back, limit):
-        """Get quality news within a specific timeframe with scoring"""
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days_back)
         params = {
             'function': 'NEWS_SENTIMENT',
             'apikey': self.api_key,
-            'limit': 100,  # Get more to filter from
+            'limit': 50,
             'time_from': start_date.strftime('%Y%m%dT0000'),
-            'time_to': end_date.strftime('%Y%m%dT2359'),
-            'sort': 'RELEVANCE'  # Prioritize relevance over recency
+            'time_to': end_date.strftime('%Y%m%dT2359')
         }
         try:
             response = requests.get(self.base_url, params=params, timeout=30)
@@ -629,82 +509,64 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                 data = response.json()
                 if 'feed' in data:
                     raw_articles = data['feed']
-                    
-                    # Score and filter articles
-                    scored_articles = []
-                    for article in raw_articles:
-                        if self._is_basic_financial_content(article):  # Use the correct method name
-                            normalized = self._normalize_article(article)
-                            quality_score = self._calculate_market_relevance_score(normalized)
-                            normalized['quality_score'] = quality_score
-                            scored_articles.append(normalized)
-                    
-                    # Sort by quality score
-                    scored_articles.sort(key=lambda x: x['quality_score'], reverse=True)
-                    return scored_articles[:limit]
+                    filtered_articles = [self._normalize_article(a) for a in raw_articles 
+                                       if self._is_basic_financial_content(a)]
+                    return filtered_articles[:limit]
         except Exception as e:
             print(f"❌ Error getting timeframe news: {e}")
         return []
 
     def _is_basic_financial_content(self, article):
-        """Enhanced filtering for high-quality financial content only"""
+        """Enhanced check for quality financial content"""
         title = article.get('title', '').lower()
         summary = article.get('summary', '').lower()
         source = article.get('source', '').lower()
         
-        # Immediate exclusions - these are never quality financial news
+        # Exclude non-financial content
         exclude_terms = [
             'horoscope', 'recipe', 'dating', 'celebrity gossip', 'weather forecast',
             'shareholder alert', 'class action lawsuit', 'lead plaintiff deadline',
             'former attorney general', 'law firm', 'legal notice', 'litigation',
             'lawsuit against', 'reminds investors', 'kahn swick', 'losses in excess',
-            'securities fraud', 'ponzi scheme', 'pump and dump',
-            'weight loss', 'diet pill', 'miracle cure', 'get rich quick',
-            'earn money from home', 'work from home scam'
+            'attorney', 'legal', 'court', 'judge', 'settlement', 'damages',
+            'class action', 'plaintiff', 'defendant', 'securities fraud'
         ]
         
+        # Check title and summary for exclusions
         if any(term in title or term in summary for term in exclude_terms):
             return False
         
-        # Exclude ALL CAPS titles (usually spam)
+        # Exclude if title is ALL CAPS (usually spam/alerts)
         if title.isupper() and len(title) > 20:
             return False
-        
-        # Exclude obvious promotional content
-        promotional_phrases = [
-            'paid promotion', 'sponsored content', 'advertisement',
-            'buy now', 'limited time offer', 'act fast'
+            
+        # Exclude sources that are typically legal notices
+        exclude_sources = [
+            'prnewswire', 'businesswire', 'accesswire', 'globenewswire'
         ]
-        if any(phrase in title or phrase in summary for phrase in promotional_phrases):
-            return False
+        if any(excluded_source in source for excluded_source in exclude_sources):
+            # Double check - if it contains legal terms, exclude it
+            legal_terms = ['alert', 'lawsuit', 'attorney', 'plaintiff', 'class action']
+            if any(term in title for term in legal_terms):
+                return False
         
-        # Must have financial relevance
+        # Include quality financial content
         financial_indicators = [
-            # Core finance terms
             'stock', 'market', 'trading', 'investment', 'earnings', 'revenue',
             'profit', 'share', 'price', 'analyst', 'economy', 'economic',
             'financial', 'nasdaq', 'dow', 's&p', 'fed', 'inflation', 'gdp',
-            
-            # Crypto and digital assets
-            'crypto', 'bitcoin', 'ethereum', 'blockchain', 'defi',
-            
-            # Corporate terms
-            'merger', 'acquisition', 'ipo', 'ceo', 'cfo', 'board',
-            'dividend', 'split', 'buyback', 'guidance',
-            
-            # Market sectors
-            'bank', 'rates', 'bonds', 'commodities', 'oil', 'gold',
-            'tech', 'healthcare', 'energy', 'utilities', 'reit'
+            'crypto', 'bitcoin', 'ethereum', 'blockchain', 'currency',
+            'bank', 'rates', 'bonds', 'commodities', 'oil', 'gold'
         ]
         
-        has_financial_terms = any(term in title or term in summary for term in financial_indicators)
+        # Quality checks
         has_tickers = len(article.get('ticker_sentiment', [])) > 0
+        has_financial_terms = any(term in title or term in summary for term in financial_indicators)
         
-        # Quality length check
-        is_reasonable_length = 20 <= len(title) <= 200
+        # Minimum quality threshold
+        is_reasonable_length = 30 <= len(title) <= 200
         
-        # Must meet minimum criteria
-        return (has_financial_terms or has_tickers) and is_reasonable_length
+        return (has_tickers or has_financial_terms) and is_reasonable_length
 
     def _normalize_article(self, article):
         tickers = [item.get('ticker') for item in article.get('ticker_sentiment', []) if item.get('ticker')]
