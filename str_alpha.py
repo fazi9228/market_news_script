@@ -130,13 +130,13 @@ def _display_headlines():
 # --- Import the News Generator Class ---
 try:
     if api_keys_loaded:
-        from alpha_news_chill_1109 import ProfessionalNewsGenerator
+        from alpha_news_chill import ProfessionalNewsGenerator
         import_success = True
     else:
         import_success = False
 except ImportError as e:
     st.error(f"Could not import ProfessionalNewsGenerator: {e}")
-    st.info("Make sure 'alpha_news_chill_1109.py' is in the same directory as this Streamlit app.")
+    st.info("Make sure 'alpha_news_chill.py' is in the same directory as this Streamlit app.")
     import_success = False
 except Exception as e:
     st.error(f"Error importing class: {e}")
@@ -268,7 +268,7 @@ if not import_success:
     st.markdown("""
     <div class="status-error">
         <strong>❌ Import Error</strong><br>
-        Could not import the ProfessionalNewsGenerator class. Make sure <code>alpha_news_chill_1109.py</code> is in the same directory.
+        Could not import the ProfessionalNewsGenerator class. Make sure <code>alpha_news_chill.py</code> is in the same directory.
     </div>
     """, unsafe_allow_html=True)
 
@@ -524,3 +524,4 @@ with col1:
     st.caption("💡 Tip: This app guarantees Gold and Bitcoin coverage in headlines, even from previous days if today's news is quiet.")
 with col2:
     st.caption("🎨 New: 5 distinct content styles for different presentation needs - select your style in the Control Panel!")
+
