@@ -1,9 +1,9 @@
 """
-Enhanced Alpha Vantage News Generator
-- Professional, dynamic content style with varied transitions
-- Motion script generation for video production
-- Episode title generation replacing ticker columns
-- Voice-friendly content for HeyGen compatibility
+Enhanced Alpha Vantage News Generator with Style Selection System
+- 5 distinct news presentation styles
+- Improved gold/bitcoin filtering for market-relevant news only
+- Stricter spam/legal content filtering
+- Style-specific content generation
 """
 
 import requests
@@ -34,31 +34,79 @@ class ProfessionalNewsGenerator:
         self.base_url = "https://www.alphavantage.co/query"
         self.openai_client = OpenAI(api_key=self.openai_key)
         self.call_count = 0
+        
+        # Style guide definitions
+        self.style_guide = {
+            "classic_daily": {
+                "name": "Classic Daily Brief",
+                "description": "Professional, conversational, structured daily update",
+                "target_seconds": 65,
+                "tone": "conversational yet authoritative",
+                "pacing": "moderate"
+            },
+            "breaking_alert": {
+                "name": "Breaking News Alert",
+                "description": "Urgent, dramatic, immediate market developments",
+                "target_seconds": 55,
+                "tone": "urgent and dramatic",
+                "pacing": "fast"
+            },
+            "weekly_deep": {
+                "name": "Weekly Deep Dive",
+                "description": "Analytical, comprehensive, forward-looking analysis",
+                "target_seconds": 85,
+                "tone": "analytical and comprehensive",
+                "pacing": "slower, thoughtful"
+            },
+            "market_pulse": {
+                "name": "Market Pulse",
+                "description": "Energetic, rhythm-focused, punchy updates",
+                "target_seconds": 60,
+                "tone": "energetic and rhythmic",
+                "pacing": "upbeat"
+            },
+            "strategic_outlook": {
+                "name": "Strategic Outlook",
+                "description": "Advisory, institutional, strategic positioning",
+                "target_seconds": 80,
+                "tone": "advisory and institutional",
+                "pacing": "measured, authoritative"
+            }
+        }
 
-    # ===== Main Flow =====
-    def generate_content(self) -> Dict[str, Any]:
+    # ===== Main Flow with Style Selection =====
+    def generate_content(self, style_key="classic_daily") -> Dict[str, Any]:
         today = datetime.now().strftime('%A')
-        print(f"📅 Generating professional content for {today}")
+        print(f"📅 Generating {self.style_guide[style_key]['name']} content for {today}")
 
         if today == 'Monday':
-            return self._generate_monday()
+            return self._generate_monday(style_key)
         elif today == 'Wednesday':
-            return self._generate_wednesday()
+            return self._generate_wednesday(style_key)
         elif today == 'Friday':
-            return self._generate_friday()
+            return self._generate_friday(style_key)
         else:
-            return self._generate_generic()
+            return self._generate_generic(style_key)
+    
+    def get_available_styles(self) -> Dict[str, Dict]:
+        """Return available styles with descriptions"""
+        return {key: {
+            "name": style["name"],
+            "description": style["description"],
+            "target_seconds": style["target_seconds"]
+        } for key, style in self.style_guide.items()}
 
-    # ===== Day Modes =====
-    def _generate_monday(self):
+    # ===== Day Modes with Style Support =====
+    def _generate_monday(self, style_key):
         news = self._get_high_quality_news(limit=8)
         market_data = self._get_market_snapshot()
-        script, social_post, motion_script, video_caption, episode_title = self._generate_content(
-            news, "Monday", "Weekly market open with key developments", 60
+        script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
+            news, "Monday", "Weekly market open with key developments", style_key
         )
         return {
             'day': 'Monday',
             'type': 'Weekly Market Open',
+            'style': self.style_guide[style_key]['name'],
             'script': script,
             'social_post': social_post,
             'motion_script': motion_script,
@@ -69,15 +117,16 @@ class ProfessionalNewsGenerator:
             'top_articles': news[:3]
         }
 
-    def _generate_wednesday(self):
+    def _generate_wednesday(self, style_key):
         news = self._get_high_quality_news_timeframe(days_back=2, limit=10)
         movers = self._get_recent_movers()
-        script, social_post, motion_script, video_caption, episode_title = self._generate_content(
-            news, "Wednesday", "Mid-week market analysis", 75
+        script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
+            news, "Wednesday", "Mid-week market analysis", style_key
         )
         return {
             'day': 'Wednesday',
             'type': 'Mid-Week Analysis',
+            'style': self.style_guide[style_key]['name'],
             'script': script,
             'social_post': social_post,
             'motion_script': motion_script,
@@ -88,15 +137,16 @@ class ProfessionalNewsGenerator:
             'top_articles': news[:3]
         }
 
-    def _generate_friday(self):
+    def _generate_friday(self, style_key):
         news = self._get_high_quality_news_timeframe(days_back=5, limit=12)
         weekly_summary = self._get_weekly_summary()
-        script, social_post, motion_script, video_caption, episode_title = self._generate_content(
-            news, "Friday", "Weekly market wrap-up", 90
+        script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
+            news, "Friday", "Weekly market wrap-up", style_key
         )
         return {
             'day': 'Friday',
             'type': 'Weekly Market Wrap',
+            'style': self.style_guide[style_key]['name'],
             'script': script,
             'social_post': social_post,
             'motion_script': motion_script,
@@ -107,15 +157,16 @@ class ProfessionalNewsGenerator:
             'top_articles': news[:3]
         }
 
-    def _generate_generic(self):
+    def _generate_generic(self, style_key):
         news = self._get_high_quality_news(limit=8)
         market_data = self._get_market_snapshot()
-        script, social_post, motion_script, video_caption, episode_title = self._generate_content(
-            news, datetime.now().strftime('%A'), "Daily market update", 60
+        script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
+            news, datetime.now().strftime('%A'), "Daily market update", style_key
         )
         return {
             'day': datetime.now().strftime('%A'),
             'type': 'Daily Market Update',
+            'style': self.style_guide[style_key]['name'],
             'script': script,
             'social_post': social_post,
             'motion_script': motion_script,
@@ -126,21 +177,461 @@ class ProfessionalNewsGenerator:
             'top_articles': news[:3]
         }
 
-    # ===== Content Generation =====
-    def _generate_content(self, news: List[Dict], day: str, theme: str, target_seconds: int) -> Tuple[str, str, str, str, str]:
-        """Generate professional, dynamic content with varied transitions"""
+    # ===== Headlines Section - FIXED =====
+    def get_major_headlines(self, limit=15) -> List[Dict[str, Any]]:
+        """Get major market headlines with improved Gold/Bitcoin filtering"""
+        print("📰 Fetching major market headlines...")
+        
+        # Get guaranteed Gold/Bitcoin headlines (quality focused)
+        guaranteed_headlines = self._get_guaranteed_gold_bitcoin_headlines()
+        
+        # Get regular market headlines
+        regular_headlines = self._get_regular_headlines(limit - len(guaranteed_headlines))
+        
+        # Combine and remove duplicates
+        all_headlines = guaranteed_headlines + regular_headlines
+        final_headlines = self._remove_duplicate_headlines(all_headlines)
+        
+        # Sort by priority (market-moving news first)
+        final_headlines.sort(key=lambda x: self._get_priority_score(x), reverse=True)
+        
+        print(f"📊 Found {len(final_headlines)} major headlines ({len(guaranteed_headlines)} guaranteed Gold/Bitcoin)")
+        return final_headlines[:limit]
+    
+    def _get_guaranteed_gold_bitcoin_headlines(self, limit=2) -> List[Dict[str, Any]]:
+        """IMPROVED: Fetch exactly 2 quality Gold and Bitcoin market news"""
+        guaranteed = []
+        
+        time_ranges = [
+            (0, 1),   # Today
+            (1, 2),   # Yesterday  
+            (2, 4),   # 2-4 days ago
+            (4, 7)    # 4-7 days ago
+        ]
+        
+        for days_back_start, days_back_end in time_ranges:
+            if len(guaranteed) >= limit:
+                break
+                
+            headlines = self._get_headlines_timeframe(days_back_start, days_back_end, limit=100)
+            
+            # Look for QUALITY Gold commodity news (if we don't have one)
+            gold_count = sum(1 for h in guaranteed if self._is_quality_gold_commodity_news(h))
+            if gold_count == 0:
+                for headline in headlines:
+                    if (self._is_quality_gold_commodity_news(headline) and 
+                        self._is_quality_headline(headline)):
+                        guaranteed.append(headline)
+                        print(f"   🥇 Found quality Gold commodity news from {days_back_start}-{days_back_end} days ago")
+                        break
+            
+            # Look for QUALITY Bitcoin/Crypto market news (if we don't have one)
+            bitcoin_count = sum(1 for h in guaranteed if self._is_quality_crypto_market_news(h))
+            if bitcoin_count == 0 and len(guaranteed) < limit:
+                for headline in headlines:
+                    if (self._is_quality_crypto_market_news(headline) and 
+                        self._is_quality_headline(headline) and
+                        not any(self._headlines_similar(headline, existing) for existing in guaranteed)):
+                        guaranteed.append(headline)
+                        print(f"   ₿ Found quality Bitcoin/Crypto market news from {days_back_start}-{days_back_end} days ago")
+                        break
+        
+        return guaranteed[:limit]
+    
+    def _is_quality_gold_commodity_news(self, article) -> bool:
+        """FIXED: Check for actual gold commodity market news, not company news"""
+        title = article.get('title', '').lower()
+        summary = article.get('summary', '').lower()
+        
+        # STRICT EXCLUSION of company-specific news
+        company_exclusions = [
+            # Stock/corporate terms
+            'stock', 'shares', 'corp', 'corporation', 'inc', 'ltd', 'announces', 
+            'reports', 'earnings', 'dividend', 'options', 'split', 'ipo',
+            'if you invested', 'you would have', 'outperformed', 'return',
+            
+            # Specific gold company names
+            'kinross', 'newmont', 'barrick', 'goldcorp', 'agnico', 'yamana',
+            'eldorado', 'iamgold', 'opus one', 'franco-nevada', 'royal gold',
+            'goldmoney', 'gold reserve', 'gold fields', 'harmony gold',
+            
+            # Goldman Sachs false positives
+            'goldman sachs', 'goldman', 'gs group', 'investment bank'
+        ]
+        
+        if any(term in title or term in summary for term in company_exclusions):
+            return False
+        
+        # POSITIVE INDICATORS for gold commodity news
+        gold_commodity_terms = [
+            'gold price', 'gold prices', 'gold rally', 'gold surge', 'gold falls',
+            'gold futures', 'spot gold', 'gold market', 'gold trading',
+            'gold demand', 'gold supply', 'bullion', 'precious metals',
+            'gold etf rally', 'gold market outlook', 'gold commodity',
+            'central bank gold', 'inflation gold', 'safe haven gold'
+        ]
+        
+        # Must have gold + market context
+        has_gold = 'gold' in title or 'gold' in summary
+        has_market_context = any(term in title or term in summary for term in gold_commodity_terms)
+        
+        return has_gold and has_market_context
+    
+    def _is_quality_crypto_market_news(self, article) -> bool:
+        """FIXED: Check for quality crypto market news, not corporate filings"""
+        title = article.get('title', '').lower()
+        summary = article.get('summary', '').lower()
+        
+        # Must contain crypto terms
+        crypto_terms = ['bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'cryptocurrency', 'dogecoin', 'doge']
+        has_crypto = any(term in title for term in crypto_terms)
+        
+        if not has_crypto:
+            return False
+        
+        # EXCLUDE corporate/company news about crypto companies
+        corporate_exclusions = [
+            'stock split', 'reverse split', 'announces', 'reports earnings',
+            'ipo', 'share price', 'stock option', 'dividend', 'sec filing',
+            'holding inc', 'technology holding', 'corporation announces'
+        ]
+        
+        if any(term in title for term in corporate_exclusions):
+            return False
+        
+        # INCLUDE market-focused crypto news
+        market_indicators = [
+            'price', 'rises', 'falls', 'rally', 'surge', 'drops', 'trading',
+            'market', 'whale', 'etf', 'adoption', 'regulation', 'sec approval',
+            'institutional', 'treasury', 'reserves', 'demand', 'supply'
+        ]
+        
+        has_market_focus = any(term in title or term in summary for term in market_indicators)
+        return has_market_focus
+    
+    def _get_regular_headlines(self, remaining_limit) -> List[Dict[str, Any]]:
+        """Get regular market headlines with improved filtering"""
+        if remaining_limit <= 0:
+            return []
+        
+        time_from = (datetime.now() - timedelta(hours=18)).strftime('%Y%m%dT%H%M')
+            
+        params = {
+            'function': 'NEWS_SENTIMENT',
+            'apikey': self.api_key,
+            'limit': 200,  # Get more to filter better
+            'sort': 'LATEST'
+        }
+        
+        try:
+            response = requests.get(self.base_url, params=params, timeout=30)
+            self.call_count += 1
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'feed' in data:
+                    raw_articles = data['feed']
+                    
+                    # Filter for QUALITY major headlines only
+                    major_headlines = []
+                    for article in raw_articles:
+                        if self._is_quality_major_headline(article):
+                            normalized = self._normalize_article(article)
+                            major_headlines.append(normalized)
+                    
+                    # Sort by priority
+                    major_headlines.sort(key=lambda x: self._get_priority_score(x), reverse=True)
+                    
+                    return major_headlines[:remaining_limit]
+                    
+        except Exception as e:
+            print(f"❌ Error getting regular headlines: {e}")
+        
+        return []
+    
+    def _is_quality_major_headline(self, article) -> bool:
+        """IMPROVED: Strict filtering for quality market headlines only"""
+        title = article.get('title', '').lower()
+        summary = article.get('summary', '').lower()
+        source = article.get('source', '').lower()
+        
+        # STRICT EXCLUSIONS - no exceptions
+        strict_exclusions = [
+            # Legal/spam content
+            'shareholder alert', 'class action', 'lawsuit', 'attorney', 'investigation',
+            'legal notice', 'court', 'settlement', 'plaintiff', 'damages', 'reminds investors',
+            'law firm', 'securities fraud', 'kahn swick', 'losses in excess',
+            
+            # Corporate filing spam
+            'announces grant', 'stock options', 'reverse stock split', 'stock split',
+            'dividend announcement', 'board of directors', 'executive appointment',
+            'quarterly dividend', 'special dividend', 
+            
+            # Retrospective/analysis spam
+            'if you invested', 'you would have', 'outperformed', '5 years ago',
+            'strong buy', 'trending stocks', 'stocks for your', 'zacks rank',
+            
+            # Generic listicle content
+            '3 stocks', '5 stocks', 'top stocks', 'stocks to buy', 'stocks to watch'
+        ]
+        
+        if any(term in title for term in strict_exclusions):
+            return False
+        
+        # QUALITY INDICATORS - must have at least one
+        quality_indicators = [
+            # Major market events
+            'fed', 'federal reserve', 'interest rate', 'inflation', 'gdp', 'cpi',
+            'jobs report', 'unemployment', 'economic data', 'retail sales',
+            
+            # Market movements
+            'market rally', 'market surge', 'market falls', 'record high', 'all-time high',
+            'correction', 'volatility', 'dow', 'nasdaq', 's&p 500', 'index',
+            
+            # Major earnings (only big companies)
+            'earnings beat', 'earnings miss', 'quarterly results', 'revenue',
+            
+            # Sector news
+            'energy sector', 'tech sector', 'financial sector', 'banking',
+            'oil prices', 'crude oil', 'natural gas', 'energy',
+            
+            # Currency/commodities (already handled in guaranteed section)
+            'dollar', 'treasury', 'bonds', 'yield curve'
+        ]
+        
+        has_quality_content = any(term in title or term in summary for term in quality_indicators)
+        
+        # Major company earnings are OK if from reputable sources
+        major_companies = [
+            'apple', 'microsoft', 'google', 'amazon', 'tesla', 'nvidia',
+            'meta', 'netflix', 'adobe', 'oracle', 'salesforce'
+        ]
+        
+        is_major_company_news = any(company in title for company in major_companies)
+        is_reputable_source = any(src in source for src in ['cnbc', 'reuters', 'bloomberg', 'wsj', 'marketwatch'])
+        
+        # Title quality checks
+        title_length_ok = 30 <= len(title) <= 120
+        not_all_caps = not title.isupper()
+        
+        return ((has_quality_content or (is_major_company_news and is_reputable_source)) 
+                and title_length_ok and not_all_caps)
+    
+    def _get_priority_score(self, article) -> int:
+        """IMPROVED: Better priority scoring for market-relevant news"""
+        title = article.get('title', '').lower()
+        summary = article.get('summary', '').lower()
+        score = 0
+        
+        # HIGHEST PRIORITY: Quality Gold and Bitcoin market news (150+)
+        if self._is_quality_gold_commodity_news(article):
+            score += 150
+        elif self._is_quality_crypto_market_news(article):
+            score += 140
+        
+        forex_critical = [
+            'federal reserve', 'fed meeting', 'fomc', 'interest rate', 'monetary policy',
+            'ecb', 'boe', 'boj', 'snb', 'rba', 'boc', # International Central Banks
+            'cpi', 'inflation data', 'non-farm payrolls', 'nfp', # Top-tier data
+            'jobs report', 'gdp', 'unemployment', 'hawkish', 'dovish'
+        ]
+        if any(term in title for term in forex_critical):
+            score += 160
+
+        # GEOPOLITICAL EVENTS (140+)
+        # A crucial new category for major market-moving news.
+        geopolitical_events = [
+            'geopolitical', 'trade war', 'tariffs', 'sanctions', 'election', 
+            'summit', 'opec', 'brexit'
+        ]
+        if any(term in title for term in geopolitical_events):
+            score += 140
+
+        # FOREX & BOND MARKET MOVEMENT (120+)
+        # Specific terms for currency and bond market volatility.
+        forex_market_events = [
+            'dollar', 'euro', 'yen', 'pound', 'currency', 'risk-on', 'risk-off', 
+            'safe-haven', 'bond yields', 'yield curve', 'treasury'
+        ]
+        if any(term in title for term in forex_market_events):
+            score += 120
+            
+        # MEDIUM-HIGH: General Stock Market Movements (80+)
+        # Your existing list, still relevant for overall sentiment.
+        market_events = [
+            'record high', 'all-time high', 'market rally', 'market surge',
+            'dow hits', 'nasdaq reaches', 's&p 500', 'correction', 'sell-off'
+        ]
+        if any(term in title for term in market_events):
+            score += 80
+        
+        # MEDIUM: Sector/Commodity News (60+)
+        # Your existing list, works well.
+        sector_news = [
+            'oil prices', 'crude oil', 'energy sector', 'tech sector',
+            'banking sector', 'financials'
+        ]
+        if any(term in title for term in sector_news):
+            score += 60
+        
+        # MEDIUM-LOW: Major Company Earnings (40+)
+        # Your existing list for major tech earnings.
+        if 'earnings' in title and any(company in title for company in [
+            'apple', 'microsoft', 'google', 'amazon', 'tesla', 'nvidia'
+        ]):
+            score += 40
+        
+        # BONUS: Strong sentiment indicates market impact
+        sentiment_score = abs(article.get('sentiment_score', 0))
+        if sentiment_score > 0.7:
+            score += 20
+        elif sentiment_score > 0.4:
+            score += 10
+        
+        # BONUS: Multiple tickers (broader market impact)
+        ticker_count = len(article.get('tickers', []))
+        if ticker_count >= 3:
+            score += 15
+        elif ticker_count >= 1:
+            score += 5
+        
+        return score
+
+    def _get_headlines_timeframe(self, days_back_start, days_back_end, limit=50) -> List[Dict[str, Any]]:
+        """Get headlines from a specific timeframe"""
+        end_date = datetime.now() - timedelta(days=days_back_start)
+        start_date = datetime.now() - timedelta(days=days_back_end)
+        
+        params = {
+            'function': 'NEWS_SENTIMENT',
+            'apikey': self.api_key,
+            'limit': limit,
+            'time_from': start_date.strftime('%Y%m%dT0000'),
+            'time_to': end_date.strftime('%Y%m%dT2359'),
+            'sort': 'LATEST'
+        }
+        
+        try:
+            response = requests.get(self.base_url, params=params, timeout=30)
+            self.call_count += 1
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'feed' in data:
+                    return [self._normalize_article(a) for a in data['feed']]
+        except Exception as e:
+            print(f"❌ Error getting timeframe headlines: {e}")
+        
+        return []
+    
+    def _is_quality_headline(self, article) -> bool:
+        """Basic quality check for headlines"""
+        title = article.get('title', '')
+        
+        # Basic quality checks
+        title_length_ok = 25 <= len(title) <= 150
+        not_all_caps = not title.isupper()
+        not_spam = not any(spam in title.lower() for spam in ['alert', 'reminder', 'deadline'])
+        
+        return title_length_ok and not_all_caps and not_spam
+    
+    def _remove_duplicate_headlines(self, headlines) -> List[Dict[str, Any]]:
+        """Remove duplicate headlines based on title similarity"""
+        seen_titles = set()
+        unique_headlines = []
+        
+        for headline in headlines:
+            title_key = headline.get('title', '').lower()[:60]  # First 60 chars as key
+            if title_key not in seen_titles:
+                seen_titles.add(title_key)
+                unique_headlines.append(headline)
+        
+        return unique_headlines
+
+    def display_headlines(self) -> None:
+        """Display major headlines in a clean format"""
+        headlines = self.get_major_headlines()
+        
+        if not headlines:
+            print("❌ No major headlines available")
+            return
+        
+        print("\n" + "="*80)
+        print("📰 MAJOR MARKET HEADLINES TODAY")
+        print("="*80)
+        
+        for i, headline in enumerate(headlines, 1):
+            # Format timestamp and check if it's from previous days
+            time_pub = headline.get('time_published', '')
+            age_indicator = ""
+            
+            if time_pub and len(time_pub) >= 8:
+                try:
+                    pub_date = datetime.strptime(time_pub[:8], '%Y%m%d')
+                    today = datetime.now().date()
+                    pub_date_only = pub_date.date()
+                    
+                    days_ago = (today - pub_date_only).days
+                    
+                    if days_ago == 0:
+                        formatted_time = f"{time_pub[4:6]}/{time_pub[6:8]} {time_pub[9:11]}:{time_pub[11:13]}"
+                    elif days_ago == 1:
+                        formatted_time = f"Yesterday {time_pub[9:11]}:{time_pub[11:13]}"
+                        age_indicator = " 📅"
+                    elif days_ago <= 7:
+                        formatted_time = f"{days_ago}d ago {time_pub[9:11]}:{time_pub[11:13]}"
+                        age_indicator = " 📅"
+                    else:
+                        formatted_time = f"{time_pub[4:6]}/{time_pub[6:8]} (older)"
+                        age_indicator = " 📅"
+                        
+                except:
+                    formatted_time = "Recent"
+            else:
+                formatted_time = "Recent"
+            
+            # Format tickers
+            tickers_display = ""
+            if headline.get('tickers'):
+                tickers_display = f" [{', '.join(headline['tickers'][:3])}]"
+            
+            # IMPROVED sentiment icon assignment
+            if self._is_quality_gold_commodity_news(headline):
+                sentiment_icon = "🥇"
+            elif self._is_quality_crypto_market_news(headline):
+                sentiment_icon = "₿"
+            elif headline.get('sentiment') == 'bullish':
+                sentiment_icon = "📈"
+            elif headline.get('sentiment') == 'bearish':
+                sentiment_icon = "📉"
+            else:
+                sentiment_icon = "📊"
+            
+            print(f"\n{i:2d}. {headline['title']}{tickers_display}{age_indicator}")
+            print(f"    {sentiment_icon} {headline.get('sentiment', 'neutral').title()} | {headline['source']} | {formatted_time}")
+            
+            if headline.get('summary') and len(headline['summary']) > 50:
+                summary_short = headline['summary'][:120] + "..." if len(headline['summary']) > 120 else headline['summary']
+                print(f"    {summary_short}")
+        
+        print(f"\n📊 Total headlines: {len(headlines)}")
+        print("🥇 Gold Commodity | ₿ Bitcoin/Crypto Market | 📅 Previous days")
+        print("="*80)
+
+    # ===== Content Generation with Style System =====
+    def _generate_content_with_style(self, news: List[Dict], day: str, theme: str, style_key: str) -> Tuple[str, str, str, str, str]:
+        """Generate professional content using specified style guide"""
+        
+        style_config = self.style_guide[style_key]
+        target_seconds = style_config["target_seconds"]
         
         if not news:
-            fallback_script = f"Here's your market update for {datetime.now().strftime('%B %d')}. First up — markets are showing consolidation today with investors watching for key developments. Next — the Federal Reserve continues monitoring economic indicators closely. And finally — several major companies are preparing quarterly results this week. That's your {datetime.now().strftime('%B %d')} rundown — see you tomorrow!"
-            fallback_social = f"📊 Markets in consolidation mode today. Fed watching indicators closely. Major earnings ahead. #Markets #Trading #Finance"
-            fallback_motion = "Start with confident eye contact. Light gesture on 'consolidation'. Authoritative posture on Fed mention. End with professional nod."
-            fallback_caption = f"Daily Market Update - {datetime.now().strftime('%B %d, %Y')} | Consolidation & Fed Watch"
-            fallback_title = f"Market Update - {datetime.now().strftime('%B %d')} | Markets, Fed, and Earnings"
-            return fallback_script, fallback_social, fallback_motion, fallback_caption, fallback_title
+            return self._create_fallback_content_with_style(news, day, style_key)
 
         # Prepare context with top stories
         top_stories = []
-        for i, article in enumerate(news[:5], 1):  # Use top 5 stories for more context
+        for i, article in enumerate(news[:5], 1):
             tickers_str = f" (${', '.join(article['tickers'][:2])})" if article.get('tickers') else ""
             top_stories.append(f"{i}. {article['title']}{tickers_str}")
             top_stories.append(f"   Sentiment: {article['sentiment']} ({article['sentiment_score']:.2f})")
@@ -149,115 +640,37 @@ class ProfessionalNewsGenerator:
         
         context = f"Date: {datetime.now().strftime('%B %d, %Y')}\nTop Stories Available:\n" + "\n".join(top_stories)
         
-        # Professional system prompt with voice-friendly guidelines
-        system_prompt = """You are a professional financial news presenter creating concise, authoritative market updates. Your style should match financial news broadcasts - direct, informative, and professional.
+        # Style-specific system prompt
+        system_prompt = f"""You are an expert global market analyst creating content for a sophisticated financial audience. Your primary goal is to identify and report on the most impactful news driving global markets.
 
-STYLE GUIDELINES:
-- Start with "Here's your market update for [date]"
-- Present 2-3 key stories with varied, natural transitions
-- Use professional language: "analysts warn", "sector continues to", "drawing bullish sentiment"
-- Include specific numbers, projections, and company names when available
-- Keep sentences clear and declarative
-- End with a brief, professional sign-off
-- Sound authoritative but accessible
+PRIORITIZATION HIERARCHY:
+1.  **Top Priority:** Major economic data releases (Inflation/CPI, GDP, Jobs/NFP) from G7 nations.
+2.  **High Priority:** Central bank announcements (Fed, ECB, BoE, BoJ) and significant geopolitical events.
+3.  **Medium Priority:** Major M&A deals and significant, confirmed corporate news.
+4.  **Lower Priority:** Market speculation, rumors, and analyst commentary.
 
-TICKER SYMBOL RULES FOR VOICE SYNTHESIS:
+Your task is to select the top 3 most important stories from the provided context based on this hierarchy and build the script around them.
+
+
+SELECTED STYLE: {style_config['name']}
+DESCRIPTION: {style_config['description']}
+TONE: {style_config['tone']}
+PACING: {style_config['pacing']}
+TARGET LENGTH: {target_seconds} seconds
+
+VOICE-FRIENDLY RULES:
 - NEVER write ticker symbols that will be read aloud (e.g., $AAPL, FOREX:USD, CRYPTO:BTC)
-- Instead use company/asset names: "Apple", "US Dollar", "Bitcoin"
+- Use company/asset names: "Apple", "US Dollar", "Bitcoin"
 - For unknown tickers, use generic terms: "the company", "related stocks", "cryptocurrency markets"
-- Only use ticker symbols in parentheses if they add clarity: "Apple (AAPL)"
-- Avoid complex symbols like FOREX:KRW, CRYPTO:BTC - say "Korean Won", "Bitcoin" instead
-
-CONTENT STRUCTURE:
-1. Date-specific opening
-2. Three stories with varied transitions
-3. Market context and implications
-4. Professional closing
+- Only use ticker symbols in parentheses if they add clarity
 
 CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title keys."""
 
-        user_prompt = f"""Create a professional {target_seconds}-second financial news script in the style of the sample below:
-
-SAMPLE STYLE:
-"Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
-Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
-And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
-That's your August 20 rundown — see you tomorrow!"
-
-CONTEXT:
-{context}
-
-Return your answer in JSON format exactly like this:
-{{
-  "script": "professional news script here",
-  "social": "300-500 character detailed social post for LinkedIn/X here", 
-  "motion": "300-character motion direction here",
-  "caption": "video caption here",
-  "title": "episode title here"
-}}
-
-SCRIPT REQUIREMENTS:
-- {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
-- EXACTLY 3 STORIES with varied, natural transitions
-- Start with "Here's your market update for [current date]"
-- Use VARIED transition phrases (mix and match):
-  * Story 1: "First up", "Leading off", "Starting with", "Top story"
-  * Story 2: "Next", "Meanwhile", "Moving on", "Also", "In other news"  
-  * Story 3: "And finally", "Lastly", "Also worth noting", "And", "Wrapping up"
-- Add market context and implications for each story
-- Include phrases like "That's a potential boost for...", "Investors are watching...", "The big question is..."
-- End with "That's your [date] rundown — see you tomorrow!"
-- Sound conversational but professional
-- VOICE-FRIENDLY: Use company names, not ticker symbols (say "Apple" not "$AAPL")
-- For crypto: say "Bitcoin", "Ethereum", not "CRYPTO:BTC"
-- For forex: say "US Dollar", "Korean Won", not "FOREX:USD"
-- For unknown tickers: use "the company", "related stocks", "the sector"
-- EXCLUDE: Legal notices, shareholder alerts, class action lawsuits, attorney notices
-- FOCUS: Market movements, earnings, economic policy, sector trends, corporate developments
-- TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum for proper pacing
-
-TITLE REQUIREMENTS:
-- Format: "Market Update - [Date] | [3 key themes/sectors]"
-- Example: "Market Update - August 20 | Crypto, Energy, and Bitcoin"
-- Use 3 concise sector/theme words separated by commas and "and"
-- Keep it under 60 characters total
-- Focus on the main sectors/themes covered in the script
-
-SOCIAL POST REQUIREMENTS:
-- A detailed professional summary of key developments, written for an audience on LinkedIn or X.
-# CHANGED: Use a word count for better accuracy.
-- The social post must be between 60 and 90 words.
-- Structure with a strong opening line, 2-3 bullet points for clarity, and a concluding thought.
-- Include 2-3 relevant tickers or key figures.
-- CRITICAL: Do not use any emojis.
-- Include 3-4 professional hashtags like #FinancialNews, #MarketUpdate, #Investing.
-
-# ADDED: Provide a clear example for the AI to follow.
-GOOD EXAMPLE OF A SOCIAL POST:
-"A look at today's key market drivers. NVIDIA continues its upward trend, closing higher on strong AI chip demand, while the broader tech sector sees consolidation.
-- NVIDIA ($NVDA): Shares are up after analysts revised price targets, citing sustained AI momentum.
-- Inflation Data: New CPI data shows a slight moderation, easing pressure on the Federal Reserve ahead of its next meeting.
-Investors are now watching to see if this week's positive momentum can be sustained.
-#MarketUpdate #NVIDIA #AI #Investing #FederalReserve"
-
-MOTION SCRIPT REQUIREMENTS (300 characters max):
-- Professional presenter body language directions
-- Include: opening stance, key gesture moments, transitions, closing
-- Specify eye contact, hand gestures, posture changes
-- Match the tone and key points of the script
-
-VIDEO CAPTION REQUIREMENTS:
-- Professional title for the video
-- Include date and key topics covered
-- Suitable for video thumbnail/title
-- 60-80 characters ideal
-
-THEME: {theme}
-
-IMPORTANT: Only use legitimate market news, economic developments, earnings reports, and corporate announcements. Ignore legal notices, shareholder alerts, and lawsuit announcements."""
+        # Style-specific user prompt
+        user_prompt = self._build_style_specific_prompt(style_key, context, target_seconds, theme)
         
         try:
-            print(f"🤖 Generating professional content with GPT-4o...")
+            print(f"🤖 Generating {style_config['name']} content with GPT-4o...")
             
             response = self.openai_client.chat.completions.create(
                 model="gpt-4o",
@@ -266,19 +679,17 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                     {"role": "user", "content": user_prompt}
                 ],
                 max_completion_tokens=1200,
-                temperature=0.3,  # Lower temperature for more consistent professional tone
+                temperature=0.3,
                 response_format={"type": "json_object"}
             )
             
             full_output = response.choices[0].message.content.strip()
             
-            # Parse JSON response
             try:
                 parsed = json.loads(full_output)
             except json.JSONDecodeError as e:
                 print(f"❌ JSON parsing error: {e}")
-                print(f"Raw output: {full_output[:200]}...")
-                return self._create_fallback_content(news, day)
+                return self._create_fallback_content_with_style(news, day, style_key)
 
             script = parsed.get("script", "").strip()
             social = parsed.get("social", "").strip()
@@ -286,163 +697,425 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
             caption = parsed.get("caption", "").strip()
             title = parsed.get("title", "").strip()
 
-            # Quality validation
             if self._validate_professional_content(script, social, motion, caption, target_seconds):
-                print(f"✅ Success with GPT-4o")
+                print(f"✅ Success with {style_config['name']} style")
                 return script, social, motion, caption, title
             else:
                 print(f"⚠️ Content quality check failed, using fallback")
-                return self._create_fallback_content(news, day)
+                return self._create_fallback_content_with_style(news, day, style_key)
 
         except Exception as e:
             print(f"❌ Error generating content: {str(e)}")
-            return self._create_fallback_content(news, day)
+            return self._create_fallback_content_with_style(news, day, style_key)
+
+    def _build_style_specific_prompt(self, style_key: str, context: str, target_seconds: int, theme: str, weekly_context: Dict = None) -> str:
+        """Build style-specific prompts for different news styles"""
+        
+        current_date = datetime.now().strftime('%B %d')
+        
+        # Base requirements for all styles
+        base_requirements = f"""
+CONTEXT:
+{context}
+
+SCRIPT REQUIREMENTS:
+- {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
+- EXACTLY 3 STORIES with varied, natural transitions
+- VOICE-FRIENDLY: Use company names, not ticker symbols
+- EXCLUDE: Legal notices, shareholder alerts, class action lawsuits
+- FOCUS: Market movements, earnings, economic policy, sector trends
+- TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum
+
+SOCIAL POST REQUIREMENTS:
+- 60-90 words, professional LinkedIn/X audience
+- Strong opening, 2-3 bullet points, concluding thought
+- Include 2-3 relevant tickers or figures
+- NO emojis, 3-4 hashtags like #MarketUpdate #Investing
+
+MOTION SCRIPT (300 chars max):
+- Professional body language directions
+- Opening stance, gestures, transitions, closing
+
+VIDEO CAPTION (60-80 chars):
+- Professional video title with date and key topics
+
+THEME: {theme}
+
+Return JSON format:
+{{
+  "script": "script here",
+  "social": "social post here", 
+  "motion": "motion directions here",
+  "caption": "video caption here",
+  "title": "episode title here"
+}}
+"""
+
+        # Style-specific examples and instructions
+        if style_key == "classic_daily":
+            return f"""Create a Classic Daily Brief script following this EXACT template:
+
+TEMPLATE:
+"Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
+Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
+That's your {current_date} rundown — see you tomorrow!"
+
+EXAMPLE STYLE:
+"Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
+Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
+And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
+That's your August 20 rundown — see you tomorrow!"
+
+KEY PHRASES TO USE:
+- "That's a potential boost for..."
+- "Investors are watching closely..."
+- "The big question on the street..."
+- Always end with date reference
+
+{base_requirements}"""
+
+        elif style_key == "breaking_alert":
+            return f"""Create a Breaking News Alert script following this URGENT template:
+
+TEMPLATE:
+"BREAKING NEWS for your market update. First, [URGENT STORY with immediate impact]. 
+JUST IN — [SECOND BREAKING STORY with dramatic element]. And finally — [THIRD STORY with critical level]. 
+All eyes are on what happens next. That's your breaking update — more as it develops."
+
+EXAMPLE STYLE:
+"BREAKING NEWS for your market update. First, the Fed just signaled a surprise policy shift, sending tech stocks tumbling. 
+JUST IN — NVIDIA shares are halted pending a major announcement, sparking sector-wide volatility. 
+And finally — Bitcoin has just breached a critical support level at $115,000. 
+All eyes are on what happens next. That's your breaking update — more as it develops."
+
+KEY PHRASES TO USE:
+- "BREAKING NEWS"
+- "JUST IN"
+- "sparking sector-wide volatility"
+- "critical support/resistance level"
+- "All eyes are on what happens next"
+
+{base_requirements}"""
+
+        elif style_key == "weekly_deep":
+            # Enhanced weekly deep dive with actual weekly context
+            weekly_info = ""
+            if weekly_context:
+                themes = weekly_context.get('themes', {})
+                summary = weekly_context.get('summary', {})
+                
+                if themes.get('primary_theme'):
+                    weekly_info += f"WEEKLY THEME: {themes['primary_theme']}\n"
+                
+                if summary.get('weekly_change'):
+                    weekly_info += f"WEEKLY PERFORMANCE: S&P 500 {summary['weekly_change']}\n"
+                
+                if themes.get('sector_leaders'):
+                    leaders = [sector.title() for sector, count in themes['sector_leaders'][:2]]
+                    weekly_info += f"LEADING SECTORS: {', '.join(leaders)}\n"
+                
+                if themes.get('top_5_stories'):
+                    weekly_info += "TOP 5 WEEKLY STORIES PROVIDED IN CONTEXT\n"
+            
+            return f"""Create a TRUE Weekly Deep Dive script following this ANALYTICAL template:
+
+IMPORTANT: This is a WEEKLY ANALYSIS covering Monday through Friday, NOT daily news.
+
+TEMPLATE:
+"Here is your weekly market analysis. The primary catalyst this week was [WEEKLY THEME from context], which [WEEKLY MARKET IMPACT and performance]. 
+In corporate developments, [MAJOR CORPORATE STORY from the week with broader implications]. 
+Looking ahead, the key data point will be [UPCOMING WEEK'S FOCUS]. The street is anticipating [NEXT WEEK'S EXPECTATION]. 
+This has been your weekly market analysis."
+
+WEEKLY CONTEXT PROVIDED:
+{weekly_info}
+
+WEEKLY LANGUAGE REQUIREMENTS:
+- Use "this week" not "today" 
+- Reference week-long trends: "throughout the week", "over five trading days"
+- Mention weekly performance: "the S&P gained X% for the week"
+- Use past tense for the week's events: "dominated this week", "emerged as"
+- Forward-looking: "heading into next week", "the week ahead"
+
+EXAMPLE WEEKLY STYLE:
+"Here is your weekly market analysis. The primary catalyst this week was Federal Reserve uncertainty, which created sustained volatility across all major indices with the S&P 500 gaining 1.8% for the week despite Tuesday's selloff.
+In corporate developments, the energy sector dominated headlines with three major oil companies reporting record quarterly profits, underscoring the sector's resilience amid geopolitical tensions. 
+Looking ahead, the key data point will be next week's inflation data release. The street is anticipating this could determine the Fed's December policy stance.
+This has been your weekly market analysis."
+
+KEY WEEKLY PHRASES TO USE:
+- "The primary catalyst this week was..."
+- "throughout the trading week"
+- "dominated headlines this week"
+- "over the five-day period"
+- "heading into next week"
+- "This has been your weekly market analysis"
+
+{base_requirements}"""
+
+        elif style_key == "market_pulse":
+            return f"""Create a Market Pulse script following this ENERGETIC template:
+
+TEMPLATE:
+"Time for your market pulse check! [SECTOR/ASSET] is [ACTION VERB] today on [CATALYST]. 
+Meanwhile, [CONTRASTING STORY] as traders [REACTION]. The mood on the street? [SENTIMENT]. 
+Here's what's driving the action: [KEY FACTORS]. Your market pulse — [CURRENT STATE] with [OUTLOOK]. Keep watching!"
+
+KEY ACTION VERBS TO USE:
+- surging, plunging, rallying, retreating, soaring, tumbling, spiking, diving
+
+KEY PHRASES TO USE:
+- "Time for your market pulse check!"
+- "Meanwhile"
+- "The mood on the street?"
+- "Here's what's driving the action:"
+- "Your market pulse —"
+- "Keep watching!"
+
+TONE: Energetic, rhythmic, engaging with momentum-focused language
+
+{base_requirements}"""
+
+        elif style_key == "strategic_outlook":
+            return f"""Create a Strategic Outlook script following this INSTITUTIONAL template:
+
+TEMPLATE:
+"Your strategic market briefing: [MACRO CONTEXT] is reshaping [MARKET/SECTOR] dynamics. 
+From a strategic standpoint, [INSTITUTIONAL PERSPECTIVE with risk/reward analysis]. 
+On the tactical side, watch for [SPECIFIC LEVELS/EVENTS] as potential inflection points. 
+Our take: [STRATEGIC RECOMMENDATION] while monitoring [KEY RISKS]. Strategic briefing complete — position accordingly."
+
+KEY INSTITUTIONAL PHRASES TO USE:
+- "Your strategic market briefing:"
+- "From a strategic standpoint..."
+- "The risk-reward equation suggests..."
+- "On the tactical side..."
+- "Our take:"
+- "as potential inflection points"
+- "Strategic briefing complete — position accordingly"
+
+TONE: Advisory, measured, institutional with strategic perspective
+
+{base_requirements}"""
+
+        return base_requirements
+        """Build style-specific prompts for different news styles"""
+        
+        current_date = datetime.now().strftime('%B %d')
+        
+        # Base requirements for all styles
+        base_requirements = f"""
+CONTEXT:
+{context}
+
+SCRIPT REQUIREMENTS:
+- {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
+- EXACTLY 3 STORIES with varied, natural transitions
+- VOICE-FRIENDLY: Use company names, not ticker symbols
+- EXCLUDE: Legal notices, shareholder alerts, class action lawsuits
+- FOCUS: Market movements, earnings, economic policy, sector trends
+- TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum
+
+SOCIAL POST REQUIREMENTS:
+- 60-90 words, professional LinkedIn/X audience
+- Strong opening, 2-3 bullet points, concluding thought
+- Include 2-3 relevant tickers or figures
+- NO emojis, 3-4 hashtags like #MarketUpdate #Investing
+
+MOTION SCRIPT (300 chars max):
+- Professional body language directions
+- Opening stance, gestures, transitions, closing
+
+VIDEO CAPTION (60-80 chars):
+- Professional video title with date and key topics
+
+THEME: {theme}
+
+Return JSON format:
+{{
+  "script": "script here",
+  "social": "social post here", 
+  "motion": "motion directions here",
+  "caption": "video caption here",
+  "title": "episode title here"
+}}
+"""
+
+        # Style-specific examples and instructions
+        if style_key == "classic_daily":
+            return f"""Create a Classic Daily Brief script following this EXACT template:
+
+TEMPLATE:
+"Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
+Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
+That's your {current_date} rundown — see you tomorrow!"
+
+EXAMPLE STYLE:
+"Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
+Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
+And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
+That's your August 20 rundown — see you tomorrow!"
+
+KEY PHRASES TO USE:
+- "That's a potential boost for..."
+- "Investors are watching closely..."
+- "The big question on the street..."
+- Always end with date reference
+
+{base_requirements}"""
+
+        elif style_key == "breaking_alert":
+            return f"""Create a Breaking News Alert script following this URGENT template:
+
+TEMPLATE:
+"BREAKING NEWS for your market update. First, [URGENT STORY with immediate impact]. 
+JUST IN — [SECOND BREAKING STORY with dramatic element]. And finally — [THIRD STORY with critical level]. 
+All eyes are on what happens next. That's your breaking update — more as it develops."
+
+EXAMPLE STYLE:
+"BREAKING NEWS for your market update. First, the Fed just signaled a surprise policy shift, sending tech stocks tumbling. 
+JUST IN — NVIDIA shares are halted pending a major announcement, sparking sector-wide volatility. 
+And finally — Bitcoin has just breached a critical support level at $115,000. 
+All eyes are on what happens next. That's your breaking update — more as it develops."
+
+KEY PHRASES TO USE:
+- "BREAKING NEWS"
+- "JUST IN"
+- "sparking sector-wide volatility"
+- "critical support/resistance level"
+- "All eyes are on what happens next"
+
+{base_requirements}"""
+
+        elif style_key == "weekly_deep":
+            return f"""Create a Weekly Deep Dive script following this ANALYTICAL template:
+
+TEMPLATE:
+"Here is your weekly market analysis. The primary catalyst this week was [MAJOR THEME], which [MARKET IMPLICATION]. 
+In corporate developments, [COMPANY/SECTOR NEWS with regulatory or strategic context]. 
+Looking ahead, the key data point will be [UPCOMING EVENT]. The street is anticipating [MARKET EXPECTATION]. 
+This has been your weekly market analysis."
+
+EXAMPLE STYLE:
+"Here is your weekly market analysis. The primary catalyst this week was the Federal Reserve's commentary on inflation, which suggests a more dovish stance moving forward. This provided a significant tailwind for growth stocks. 
+In corporate developments, Microsoft's landmark acquisition is now under regulatory scrutiny, raising questions about the deal's future and impacting both companies' valuations. 
+Looking ahead, the key data point will be next week's jobs report. The street is anticipating this will determine the market's direction for the rest of the month. 
+This has been your weekly market analysis."
+
+KEY PHRASES TO USE:
+- "The primary catalyst this week was..."
+- "In corporate developments..."
+- "Looking ahead, the key data point..."
+- "The street is anticipating..."
+- "This provided a significant tailwind/headwind..."
+
+{base_requirements}"""
+
+        elif style_key == "market_pulse":
+            return f"""Create a Market Pulse script following this ENERGETIC template:
+
+TEMPLATE:
+"Time for your market pulse check! [SECTOR/ASSET] is [ACTION VERB] today on [CATALYST]. 
+Meanwhile, [CONTRASTING STORY] as traders [REACTION]. The mood on the street? [SENTIMENT]. 
+Here's what's driving the action: [KEY FACTORS]. Your market pulse — [CURRENT STATE] with [OUTLOOK]. Keep watching!"
+
+KEY ACTION VERBS TO USE:
+- surging, plunging, rallying, retreating, soaring, tumbling, spiking, diving
+
+KEY PHRASES TO USE:
+- "Time for your market pulse check!"
+- "Meanwhile"
+- "The mood on the street?"
+- "Here's what's driving the action:"
+- "Your market pulse —"
+- "Keep watching!"
+
+TONE: Energetic, rhythmic, engaging with momentum-focused language
+
+{base_requirements}"""
+
+        elif style_key == "strategic_outlook":
+            return f"""Create a Strategic Outlook script following this INSTITUTIONAL template:
+
+TEMPLATE:
+"Your strategic market briefing: [MACRO CONTEXT] is reshaping [MARKET/SECTOR] dynamics. 
+From a strategic standpoint, [INSTITUTIONAL PERSPECTIVE with risk/reward analysis]. 
+On the tactical side, watch for [SPECIFIC LEVELS/EVENTS] as potential inflection points. 
+Our take: [STRATEGIC RECOMMENDATION] while monitoring [KEY RISKS]. Strategic briefing complete — position accordingly."
+
+KEY INSTITUTIONAL PHRASES TO USE:
+- "Your strategic market briefing:"
+- "From a strategic standpoint..."
+- "The risk-reward equation suggests..."
+- "On the tactical side..."
+- "Our take:"
+- "as potential inflection points"
+- "Strategic briefing complete — position accordingly"
+
+TONE: Advisory, measured, institutional with strategic perspective
+
+{base_requirements}"""
+
+        return base_requirements
+
+    def _create_fallback_content_with_style(self, news: List[Dict], day: str, style_key: str) -> Tuple[str, str, str, str, str]:
+        """Create style-specific fallback content"""
+        style_config = self.style_guide[style_key]
+        current_date = datetime.now().strftime('%B %d')
+        
+        # Style-specific fallback scripts
+        if style_key == "breaking_alert":
+            script = f"BREAKING NEWS for your market update. First, markets are showing heightened volatility as traders react to developing economic data. JUST IN — major indices are experiencing unusual trading patterns amid uncertainty. And finally — key support levels are being tested across multiple sectors. All eyes are on what happens next. That's your breaking update — more as it develops."
+            
+        elif style_key == "weekly_deep":
+            script = f"Here is your weekly market analysis. The primary catalyst this week was mixed economic signals, which created uncertainty in equity markets. In corporate developments, several major companies are navigating regulatory changes that could impact their strategic direction. Looking ahead, the key data point will be upcoming Federal Reserve commentary. The street is anticipating this will provide clarity on monetary policy. This has been your weekly market analysis."
+            
+        elif style_key == "market_pulse":
+            script = f"Time for your market pulse check! Markets are consolidating today on mixed economic signals. Meanwhile, sector rotation continues as traders position for upcoming data releases. The mood on the street? Cautiously optimistic with selective buying. Here's what's driving the action: economic uncertainty balanced against corporate resilience. Your market pulse — steady with defensive positioning. Keep watching!"
+            
+        elif style_key == "strategic_outlook":
+            script = f"Your strategic market briefing: evolving economic conditions are reshaping portfolio allocation dynamics. From a strategic standpoint, the risk-reward equation suggests maintaining balanced exposure while monitoring key indicators. On the tactical side, watch for upcoming economic data as potential inflection points. Our take: maintain defensive positioning while monitoring emerging opportunities. Strategic briefing complete — position accordingly."
+            
+        else:  # classic_daily
+            script = f"Here's your market update for {current_date}. First up — markets are showing mixed signals as investors digest recent economic data. Next — the Federal Reserve continues monitoring key inflation indicators. And finally — several major sectors are experiencing rotational trading patterns. That's your {current_date} rundown — see you tomorrow!"
+        
+        # Common elements for all styles
+        social = f"Market analysis for {current_date}: Mixed signals prevail as investors weigh economic data against corporate fundamentals. Key themes include Federal Reserve policy outlook and sector rotation dynamics. Strategic positioning remains focused on quality names with strong fundamentals. #MarketUpdate #Investing #FinancialNews #Strategy"
+        
+        motion = f"Professional opening with {style_config['tone']} delivery. Emphasize key transitions matching {style_config['pacing']} pace. Maintain authoritative posture throughout. End with confident, style-appropriate closing gesture."
+        
+        caption = f"{style_config['name']} - {current_date} | Markets, Fed & Strategy"
+        title = f"{style_config['name']} - {current_date} | Economic Data and Market Analysis"
+        
+        return script, social, motion, caption, title
 
     def _validate_professional_content(self, script: str, social: str, motion: str, caption: str, target_seconds: int) -> bool:
         """Validate generated content meets professional standards"""
         
-        if not script.startswith("Here's your market update"):
-            print("Validation failed: Script does not have correct start.")
+        if len(script) < 100:
+            print("Validation failed: Script too short.")
             return False
         
         if len(social) > 800 or len(social) < 150:
-            print(f"Validation failed: Social post length is {len(social)}, which is outside the 150-800 character range.")
+            print(f"Validation failed: Social post length is {len(social)}, outside 150-800 range.")
             return False
         
         if len(motion) > 350 or len(motion) < 50:
-            print("Validation failed: Motion script length is out of range.")
+            print("Validation failed: Motion script length out of range.")
             return False
         
         if len(caption) > 100 or len(caption) < 20:
-            print("Validation failed: Caption length is out of range.")
+            print("Validation failed: Caption length out of range.")
             return False
         
         return True
-
-    def _create_fallback_content(self, news: List[Dict], day: str) -> Tuple[str, str, str, str, str]:
-        """Professional fallback content with voice-friendly formatting and dynamic transitions"""
-        current_date = datetime.now().strftime('%B %d')
-        
-        # Fallback for when no news is available at all
-        if not news:
-            script = f"Here's your market update for {current_date}. First up — markets are showing mixed signals today as investors digest recent economic data. Next — the Federal Reserve continues to monitor inflation. And finally — several major companies are preparing for upcoming earnings reports. That's your {current_date} rundown — see you tomorrow!"
-            social = f"A look at today's market drivers for {current_date}. Mixed signals prevail as investors weigh recent economic data against upcoming earnings reports. The Federal Reserve's stance on inflation remains a key focus for traders. #MarketUpdate #Finance #Economy #Investing"
-            motion = "Professional opening with steady eye contact. Light gesture on 'mixed signals'. Authoritative posture on Fed mention. End with confident nod."
-            caption = f"Market Update - {current_date} | Mixed Signals, Fed Watch & Earnings"
-            title = f"Market Update - {current_date} | Markets, Fed, and Earnings"
-            return script, social, motion, caption, title
-        
-        # Build a more robust script from available news
-        script_parts = [f"Here's your market update for {current_date}."]
-        
-        openings = ["First up", "Leading off", "Top story today"]
-        script_parts.append(f"{openings[0]} — {news[0]['title']}.")
-        
-        if len(news) > 1:
-            transitions = ["Next", "Meanwhile", "Moving on"]
-            script_parts.append(f"{transitions[0]} — {news[1]['title']}.")
-        
-        if len(news) > 2:
-            endings = ["And finally", "Lastly", "Wrapping up"]
-            script_parts.append(f"{endings[0]} — {news[2]['title']}.")
-        else:
-            script_parts.append("And finally — market volatility continues as traders position for upcoming economic data.")
-        
-        script_parts.append(f"That's your {current_date} rundown — see you tomorrow!")
-        script = " ".join(script_parts)
-
-        themes = []
-        for article in news[:3]:
-            title_lower = article['title'].lower()
-            if 'crypto' in title_lower or 'bitcoin' in title_lower: themes.append("Crypto")
-            elif 'fed' in title_lower or 'interest' in title_lower: themes.append("Fed")
-            elif 'energy' in title_lower or 'oil' in title_lower: themes.append("Energy")
-            elif 'earnings' in title_lower or 'profit' in title_lower: themes.append("Earnings")
-            elif 'tech' in title_lower or 'ai' in title_lower: themes.append("Tech")
-            else: themes.append("Markets")
-        
-        unique_themes = list(dict.fromkeys(themes))[:3]
-        if len(unique_themes) < 3:
-            unique_themes.extend(["Markets"] * (3 - len(unique_themes)))
-            
-        title = f"Market Update - {current_date} | {unique_themes[0]}, {unique_themes[1]}, and {unique_themes[2]}"
-        caption = f"Market Update - {current_date} | {unique_themes[0]}, {unique_themes[1]} & More"
-        motion = "Start with confident eye contact. Emphasize transitions with slight gestures. Maintain professional posture. End with authoritative nod."
-        
-        # Create the structured, high-quality social post
-        social_parts = [f"A look at today's key market developments for {current_date}:"]
-        tickers_text_1 = f"(${'/'.join(news[0]['tickers'][:2])})" if news[0].get('tickers') else ""
-        social_parts.append(f"\n- Top Story: {news[0]['title']} {tickers_text_1}")
-        if len(news) > 1:
-            tickers_text_2 = f"(${'/'.join(news[1]['tickers'][:2])})" if news[1].get('tickers') else ""
-            social_parts.append(f"- Also Watching: {news[1]['title']} {tickers_text_2}")
-
-        social_parts.append("\nInvestors are closely monitoring these events as they could influence sector performance and overall market sentiment.")
-        social_parts.append("\n#FinancialNews #MarketUpdate #Investing #Economy #StockMarket")
-        social = " ".join(social_parts)
-
-        return script, social, motion, caption, title
-
-    def _convert_tickers_for_voice(self, tickers: List[str]) -> List[str]:
-        """Convert ticker symbols to voice-friendly company/asset names"""
-        ticker_map = {
-            # Major stocks
-            'AAPL': 'Apple',
-            'MSFT': 'Microsoft', 
-            'GOOGL': 'Google',
-            'AMZN': 'Amazon',
-            'TSLA': 'Tesla',
-            'NVDA': 'NVIDIA',
-            'META': 'Meta',
-            'NFLX': 'Netflix',
-            'GRMN': 'Garmin',
-            
-            # Crypto patterns
-            'BTC': 'Bitcoin',
-            'ETH': 'Ethereum',
-            'CRYPTO:BTC': 'Bitcoin',
-            'CRYPTO:ETH': 'Ethereum',
-            
-            # Forex patterns  
-            'FOREX:USD': 'US Dollar',
-            'FOREX:EUR': 'Euro',
-            'FOREX:GBP': 'British Pound',
-            'FOREX:JPY': 'Japanese Yen',
-            'FOREX:KRW': 'Korean Won',
-            'FOREX:CNY': 'Chinese Yuan',
-            
-            # Common unknown patterns
-            'TOP': 'the company',
-            'UNKNOWN': 'related stocks'
-        }
-        
-        voice_friendly = []
-        for ticker in tickers:
-            if ticker in ticker_map:
-                voice_friendly.append(ticker_map[ticker])
-            elif ticker.startswith('FOREX:'):
-                # Handle any FOREX: pattern generically
-                currency = ticker.replace('FOREX:', '')
-                voice_friendly.append(f"the {currency}")
-            elif ticker.startswith('CRYPTO:'):
-                # Handle any CRYPTO: pattern generically  
-                crypto = ticker.replace('CRYPTO:', '')
-                voice_friendly.append(f"{crypto} cryptocurrency")
-            elif len(ticker) <= 4 and ticker.isupper():
-                # Likely a stock ticker
-                voice_friendly.append("the company")
-            else:
-                # Unknown format
-                voice_friendly.append("related markets")
-        
-        return voice_friendly
 
     # ===== News Fetch =====
     def _get_high_quality_news(self, limit=8):
         params = {
             'function': 'NEWS_SENTIMENT',
             'apikey': self.api_key,
-            'limit': 50,
+            'limit': 100,
             'sort': 'LATEST'
         }
         try:
@@ -466,11 +1139,12 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                         print(f"Source: {raw_articles[0].get('source', 'N/A')}")
                         print(f"Summary: {raw_articles[0].get('summary', 'N/A')[:100]}...")
                     
+                    # IMPROVED filtering - use quality check instead of basic
                     filtered_articles = [self._normalize_article(a) for a in raw_articles 
-                                       if self._is_basic_financial_content(a)]
+                                       if self._is_quality_financial_content(a)]
                     
                     if self.debug_mode:
-                        print(f"📋 Articles after basic filtering: {len(filtered_articles)}")
+                        print(f"📋 Articles after quality filtering: {len(filtered_articles)}")
                         if filtered_articles:
                             print("\n✅ Sample filtered articles:")
                             for i, article in enumerate(filtered_articles[:3]):
@@ -498,7 +1172,7 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
         params = {
             'function': 'NEWS_SENTIMENT',
             'apikey': self.api_key,
-            'limit': 50,
+            'limit': 100,
             'time_from': start_date.strftime('%Y%m%dT0000'),
             'time_to': end_date.strftime('%Y%m%dT2359')
         }
@@ -510,63 +1184,67 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                 if 'feed' in data:
                     raw_articles = data['feed']
                     filtered_articles = [self._normalize_article(a) for a in raw_articles 
-                                       if self._is_basic_financial_content(a)]
+                                       if self._is_quality_financial_content(a)]
                     return filtered_articles[:limit]
         except Exception as e:
             print(f"❌ Error getting timeframe news: {e}")
         return []
-
-    def _is_basic_financial_content(self, article):
-        """Enhanced check for quality financial content"""
+    
+    def _is_quality_financial_content(self, article):
+        """IMPROVED: Enhanced check for quality financial content with stricter filtering"""
         title = article.get('title', '').lower()
         summary = article.get('summary', '').lower()
         source = article.get('source', '').lower()
         
-        # Exclude non-financial content
-        exclude_terms = [
-            'horoscope', 'recipe', 'dating', 'celebrity gossip', 'weather forecast',
-            'shareholder alert', 'class action lawsuit', 'lead plaintiff deadline',
-            'former attorney general', 'law firm', 'legal notice', 'litigation',
-            'lawsuit against', 'reminds investors', 'kahn swick', 'losses in excess',
-            'attorney', 'legal', 'court', 'judge', 'settlement', 'damages',
-            'class action', 'plaintiff', 'defendant', 'securities fraud'
-        ]
-        
-        # Check title and summary for exclusions
-        if any(term in title or term in summary for term in exclude_terms):
-            return False
-        
-        # Exclude if title is ALL CAPS (usually spam/alerts)
-        if title.isupper() and len(title) > 20:
-            return False
+        # STRICT EXCLUSIONS - same as headline filtering
+        strict_exclusions = [
+            # Legal/spam content
+            'shareholder alert', 'class action', 'lawsuit', 'attorney', 'investigation',
+            'legal notice', 'court', 'settlement', 'plaintiff', 'damages', 'reminds investors',
+            'law firm', 'securities fraud', 'kahn swick', 'losses in excess',
             
-        # Exclude sources that are typically legal notices
-        exclude_sources = [
-            'prnewswire', 'businesswire', 'accesswire', 'globenewswire'
-        ]
-        if any(excluded_source in source for excluded_source in exclude_sources):
-            # Double check - if it contains legal terms, exclude it
-            legal_terms = ['alert', 'lawsuit', 'attorney', 'plaintiff', 'class action']
-            if any(term in title for term in legal_terms):
-                return False
-        
-        # Include quality financial content
-        financial_indicators = [
-            'stock', 'market', 'trading', 'investment', 'earnings', 'revenue',
-            'profit', 'share', 'price', 'analyst', 'economy', 'economic',
-            'financial', 'nasdaq', 'dow', 's&p', 'fed', 'inflation', 'gdp',
-            'crypto', 'bitcoin', 'ethereum', 'blockchain', 'currency',
-            'bank', 'rates', 'bonds', 'commodities', 'oil', 'gold'
+            # Corporate filing spam
+            'announces grant', 'stock options', 'reverse stock split', 'stock split',
+            'dividend announcement', 'board of directors', 'executive appointment',
+            
+            # Retrospective/analysis spam
+            'if you invested', 'you would have', 'outperformed', '5 years ago',
+            'strong buy', 'trending stocks', 'stocks for your', 'zacks rank',
+            
+            # Generic content
+            '3 stocks', '5 stocks', 'top stocks', 'stocks to buy', 'stocks to watch'
         ]
         
-        # Quality checks
+        if any(term in title for term in strict_exclusions):
+            return False
+        
+        # POSITIVE INDICATORS for quality financial content
+        quality_indicators = [
+            # Market movements and data
+            'earnings', 'revenue', 'profit', 'guidance', 'outlook', 'beats', 'misses',
+            'market', 'trading', 'price', 'rally', 'surge', 'falls', 'drops',
+            
+            # Economic indicators
+            'fed', 'federal reserve', 'interest rate', 'inflation', 'gdp', 'employment',
+            'economic data', 'consumer confidence', 'retail sales', 'manufacturing',
+            
+            # Sectors and commodities
+            'energy', 'technology', 'healthcare', 'financials', 'oil prices', 'gold',
+            'cryptocurrency', 'bitcoin', 'ethereum', 'bonds', 'treasury', 'currency',
+            
+            # Major market events
+            'ipo', 'merger', 'acquisition', 'partnership', 'deal', 'contract'
+        ]
+        
+        # Must have financial indicators AND quality checks
+        has_financial_content = any(term in title or term in summary for term in quality_indicators)
         has_tickers = len(article.get('ticker_sentiment', [])) > 0
-        has_financial_terms = any(term in title or term in summary for term in financial_indicators)
         
-        # Minimum quality threshold
-        is_reasonable_length = 30 <= len(title) <= 200
+        # Title quality
+        title_length_ok = 25 <= len(title) <= 150
+        not_all_caps = not title.isupper()
         
-        return (has_tickers or has_financial_terms) and is_reasonable_length
+        return (has_financial_content or has_tickers) and title_length_ok and not_all_caps
 
     def _normalize_article(self, article):
         tickers = [item.get('ticker') for item in article.get('ticker_sentiment', []) if item.get('ticker')]
@@ -645,9 +1323,9 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
             print(f"❌ Error getting weekly summary: {e}")
         return {}
 
-    # ===== Excel Saving with Episode Title =====
+    # ===== Excel Saving =====
     def save_to_excel(self, content: Dict[str, Any]) -> str:
-        """Save content to Excel with episode title replacing top tickers"""
+        """Save content to Excel with style information"""
         filename = "market_content_tracker.xlsx"
         
         try:
@@ -661,13 +1339,13 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                 except Exception as e:
                     print(f"⚠️ Could not read existing file ({e}), creating new structure")
                     existing_df = pd.DataFrame(columns=[
-                        'Date', 'Time', 'Day', 'Content_Type', 'Script', 'Social_Post',
+                        'Date', 'Time', 'Day', 'Content_Type', 'Style', 'Script', 'Social_Post',
                         'Motion_Script', 'Video_Caption', 'Episode_Title', 'Script_Length', 'Word_Count', 
                         'News_Count', 'Market_Data', 'Quality_Score'
                     ])
             else:
                 existing_df = pd.DataFrame(columns=[
-                    'Date', 'Time', 'Day', 'Content_Type', 'Script', 'Social_Post',
+                    'Date', 'Time', 'Day', 'Content_Type', 'Style', 'Script', 'Social_Post',
                     'Motion_Script', 'Video_Caption', 'Episode_Title', 'Script_Length', 'Word_Count', 
                     'News_Count', 'Market_Data', 'Quality_Score'
                 ])
@@ -685,6 +1363,7 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
                 'Time': current_time.strftime('%H:%M:%S'),
                 'Day': content['day'],
                 'Content_Type': content['type'],
+                'Style': content.get('style', 'Classic Daily Brief'),
                 'Script': content['script'],
                 'Social_Post': content['social_post'],
                 'Motion_Script': content.get('motion_script', ''),
@@ -700,173 +1379,66 @@ IMPORTANT: Only use legitimate market news, economic developments, earnings repo
             new_row_df = pd.DataFrame([new_row])
             new_df = pd.concat([existing_df, new_row_df], ignore_index=True)
             
-            print(f"📝 Adding new row: {new_row['Date']} {new_row['Time']} - {new_row['Day']}")
-            print(f"📄 Script preview: {new_row['Script'][:50]}...")
-            print(f"🎬 Motion script: {new_row['Motion_Script'][:50]}...")
-            print(f"📺 Video caption: {new_row['Video_Caption']}")
-            print(f"🎯 Episode title: {new_row['Episode_Title']}")
+            print(f"🔍 Adding new row: {new_row['Date']} {new_row['Time']} - {new_row['Day']} ({new_row['Style']})")
             
             # Sort by Date and Time (most recent first)
             new_df['DateTime'] = pd.to_datetime(new_df['Date'] + ' ' + new_df['Time'])
             new_df = new_df.sort_values('DateTime', ascending=False).drop('DateTime', axis=1)
             
-            print(f"📊 Total rows to save: {len(new_df)}")
-            
             # Save to Excel
-            print("💾 Saving to Excel...")
             with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
                 new_df.to_excel(writer, sheet_name='Content_Log', index=False, header=True)
-                print(f"📋 Content_Log sheet saved with {len(new_df)} rows")
                 
                 # Create summary sheet
                 summary_data = pd.DataFrame({
                     'Metric': [
-                        'Total Entries', 'Last Updated', 'Scripts This Week', 
-                        'Most Active Day', 'Average Script Length', 'Total Words Generated'
+                        'Total Entries', 'Last Updated', 'Most Used Style', 
+                        'Average Script Length', 'Total Words Generated'
                     ],
                     'Value': [
                         len(new_df),
                         current_time.strftime('%Y-%m-%d %H:%M:%S'),
-                        len(new_df[new_df['Date'] >= (current_time - timedelta(days=7)).strftime('%Y-%m-%d')]),
-                        new_df['Day'].mode().iloc[0] if len(new_df) > 0 else 'None',
+                        new_df['Style'].mode().iloc[0] if len(new_df) > 0 else 'None',
                         f"{new_df['Script_Length'].mean():.0f} characters" if len(new_df) > 0 else '0',
                         new_df['Word_Count'].sum() if len(new_df) > 0 else 0
                     ]
                 })
                 summary_data.to_excel(writer, sheet_name='Summary', index=False)
-                print("📈 Summary sheet saved")
                 
-                # Today's articles (if available)
-                if content.get('top_articles'):
-                    articles_data = []
-                    for i, article in enumerate(content['top_articles'], 1):
-                        articles_data.append({
+                # Major Headlines tab
+                major_headlines = self.get_major_headlines(limit=20)
+                if major_headlines:
+                    headlines_data = []
+                    for i, headline in enumerate(major_headlines, 1):
+                        time_pub = headline.get('time_published', '')
+                        formatted_time = ""
+                        if time_pub and len(time_pub) >= 8:
+                            formatted_time = f"{time_pub[4:6]}/{time_pub[6:8]} {time_pub[9:11]}:{time_pub[11:13]}"
+                        
+                        headlines_data.append({
                             'Rank': i,
-                            'Title': article['title'],
-                            'Source': article['source'],
-                            'Sentiment': article['sentiment'],
-                            'Sentiment_Score': article['sentiment_score'],
-                            'Tickers': ', '.join(article.get('tickers', [])),
-                            'Time_Published': article['time_published']
+                            'Title': headline['title'],
+                            'Source': headline['source'],
+                            'Time': formatted_time,
+                            'Sentiment': headline['sentiment'].title(),
+                            'Score': round(headline['sentiment_score'], 3),
+                            'Tickers': ', '.join(headline.get('tickers', [])),
+                            'Summary': headline.get('summary', '')[:200] + "..." if len(headline.get('summary', '')) > 200 else headline.get('summary', ''),
                         })
                     
-                    pd.DataFrame(articles_data).to_excel(writer, sheet_name='Todays_Sources', index=False)
-                    print("📰 Today's Sources sheet saved")
+                    headlines_df = pd.DataFrame(headlines_data)
+                    headlines_df.to_excel(writer, sheet_name='Major_Headlines', index=False)
             
-            print("💾 Excel file write completed")
-            
-            # Verify the file was written correctly
-            try:
-                verify_df = pd.read_excel(filename, sheet_name='Content_Log')
-                print(f"✅ Verification: File contains {len(verify_df)} rows")
-                if len(verify_df) > 0:
-                    print(f"📝 Latest entry: {verify_df.iloc[0]['Date']} - {verify_df.iloc[0]['Day']}")
-                    print(f"🎬 Motion script included: {'Yes' if verify_df.iloc[0].get('Motion_Script') else 'No'}")
-                    print(f"📺 Video caption included: {'Yes' if verify_df.iloc[0].get('Video_Caption') else 'No'}")
-                    print(f"🎯 Episode title included: {'Yes' if verify_df.iloc[0].get('Episode_Title') else 'No'}")
-            except Exception as e:
-                print(f"⚠️ Verification failed: {e}")
-            
-            # Format the Excel file for better readability
-            self._format_excel_file(filename)
-            
-            print(f"✅ Content appended to: {filename}")
-            print(f"📊 Total entries in file: {len(new_df)}")
-            
+            print(f"✅ Content saved to: {filename}")
             return filename
             
         except Exception as e:
             print(f"❌ Error updating Excel file: {e}")
-            return self._create_backup_file(content)
-    
-    def _format_excel_file(self, filename: str):
-        """Format Excel file with new columns including episode title"""
-        try:
-            from openpyxl import load_workbook
-            from openpyxl.styles import Font, PatternFill, Alignment
-            
-            wb = load_workbook(filename)
-            
-            if 'Content_Log' in wb.sheetnames:
-                ws = wb['Content_Log']
-                
-                # Header formatting
-                header_font = Font(bold=True, color="FFFFFF")
-                header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-                
-                for cell in ws[1]:
-                    cell.font = header_font
-                    cell.fill = header_fill
-                    cell.alignment = Alignment(horizontal="center")
-                
-                # Updated column widths for new columns
-                column_widths = {
-                    'A': 12,  # Date
-                    'B': 10,  # Time
-                    'C': 12,  # Day
-                    'D': 20,  # Content_Type
-                    'E': 80,  # Script
-                    'F': 50,  # Social_Post
-                    'G': 60,  # Motion_Script
-                    'H': 40,  # Video_Caption
-                    'I': 50,  # Episode_Title
-                    'J': 15,  # Script_Length
-                    'K': 12,  # Word_Count
-                    'L': 12,  # News_Count
-                    'M': 25,  # Market_Data
-                    'N': 15   # Quality_Score
-                }
-                
-                for col, width in column_widths.items():
-                    ws.column_dimensions[col].width = width
-                
-                # Text wrapping for script, social post, motion script, caption, and title columns
-                for row in ws.iter_rows(min_row=2):
-                    if len(row) >= 9:  # Ensure we have enough columns
-                        row[4].alignment = Alignment(wrap_text=True)  # Script
-                        row[5].alignment = Alignment(wrap_text=True)  # Social_Post
-                        row[6].alignment = Alignment(wrap_text=True)  # Motion_Script
-                        row[7].alignment = Alignment(wrap_text=True)  # Video_Caption
-                        row[8].alignment = Alignment(wrap_text=True)  # Episode_Title
-            
-            wb.save(filename)
-            
-        except ImportError:
-            print("⚠️ openpyxl not available for advanced formatting")
-        except Exception as e:
-            print(f"⚠️ Could not format Excel file: {e}")
-    
-    def _create_backup_file(self, content: Dict[str, Any]) -> str:
-        """Create timestamped backup file if main update fails"""
-        date_str = datetime.now().strftime('%Y%m%d_%H%M')
-        day = content['day'].lower()
-        filename = f"market_content_backup_{day}_{date_str}.xlsx"
-        
-        try:
-            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-                # Single row for this content
-                content_data = pd.DataFrame({
-                    'Date': [datetime.now().strftime('%Y-%m-%d')],
-                    'Time': [datetime.now().strftime('%H:%M:%S')],
-                    'Day': [content['day']],
-                    'Content_Type': [content['type']],
-                    'Script': [content['script']],
-                    'Social_Post': [content['social_post']],
-                    'Motion_Script': [content.get('motion_script', '')],
-                    'Video_Caption': [content.get('video_caption', '')],
-                    'Episode_Title': [content.get('episode_title', '')],
-                    'News_Count': [content.get('news_count', 0)]
-                })
-                content_data.to_excel(writer, sheet_name='Content', index=False)
-            
-            return filename
-        except Exception as e:
-            print(f"❌ Error creating backup file: {e}")
             return ""
 
 
 def main():
-    print("=== Enhanced Alpha Vantage News Generator (Professional Dynamic Style) ===")
+    print("=== Enhanced Alpha Vantage News Generator with Style Selection ===")
     print("📋 Checking dependencies...")
     
     # Check optional dependencies
@@ -882,48 +1454,107 @@ def main():
         generator = ProfessionalNewsGenerator(debug_mode=True)
         print("✅ APIs initialized")
         
-        content = generator.generate_content()
+        # Display available styles
+        print("\n" + "="*70)
+        print("🎨 AVAILABLE CONTENT STYLES:")
+        print("="*70)
         
-        print("\n" + "="*60)
-        print("📺 GENERATED SCRIPT:")
-        print("="*60)
-        print(content['script'])
+        styles = generator.get_available_styles()
+        for i, (key, info) in enumerate(styles.items(), 1):
+            print(f"{i}. {info['name']} ({info['target_seconds']}s)")
+            print(f"   {info['description']}")
         
-        print("\n" + "="*60)
-        print("📱 SOCIAL MEDIA POST:")
-        print("="*60)
-        print(content['social_post'])
+        print("\n" + "="*70)
+        print("📋 MAIN OPTIONS:")
+        print("1. Generate content with style selection")
+        print("2. View major headlines only")
+        print("3. Generate content + headlines with style selection")
+        print("="*70)
         
-        print("\n" + "="*60)
-        print("🎬 MOTION SCRIPT:")
-        print("="*60)
-        print(content['motion_script'])
+        choice = input("Select main option (1-3): ").strip()
         
-        print("\n" + "="*60)
-        print("📺 VIDEO CAPTION:")
-        print("="*60)
-        print(content['video_caption'])
+        if choice == "2":
+            # Just show headlines
+            generator.display_headlines()
+            return
         
-        print("\n" + "="*60)
-        print("🎯 EPISODE TITLE:")
-        print("="*60)
-        print(content['episode_title'])
+        elif choice in ["1", "3"]:
+            # Style selection
+            print(f"\n🎨 Select Content Style:")
+            style_keys = list(styles.keys())
+            for i, (key, info) in enumerate(styles.items(), 1):
+                print(f"{i}. {info['name']}")
+            
+            try:
+                style_choice = int(input(f"Choose style (1-{len(style_keys)}): ").strip()) - 1
+                if 0 <= style_choice < len(style_keys):
+                    selected_style = style_keys[style_choice]
+                    selected_name = styles[selected_style]['name']
+                    print(f"✅ Selected: {selected_name}")
+                else:
+                    print("⚠️ Invalid selection, using Classic Daily Brief")
+                    selected_style = "classic_daily"
+            except (ValueError, IndexError):
+                print("⚠️ Invalid input, using Classic Daily Brief")
+                selected_style = "classic_daily"
+            
+            # Generate content with selected style
+            content = generator.generate_content(style_key=selected_style)
+            
+            # Display results
+            print("\n" + "="*60)
+            print(f"📺 GENERATED SCRIPT ({content['style']}):")
+            print("="*60)
+            print(content['script'])
+            
+            print("\n" + "="*60)
+            print("📱 SOCIAL MEDIA POST:")
+            print("="*60)
+            print(content['social_post'])
+            
+            print("\n" + "="*60)
+            print("🎬 MOTION SCRIPT:")
+            print("="*60)
+            print(content['motion_script'])
+            
+            print("\n" + "="*60)
+            print("📺 VIDEO CAPTION:")
+            print("="*60)
+            print(content['video_caption'])
+            
+            print("\n" + "="*60)
+            print("🎯 EPISODE TITLE:")
+            print("="*60)
+            print(content['episode_title'])
+            
+            if choice == "3":
+                # Also show headlines
+                print("\n")
+                generator.display_headlines()
+            
+            # Save to Excel
+            filename = generator.save_to_excel(content)
+            if filename:
+                print(f"\n✅ Content saved to: {filename}")
+                print(f"📊 Style used: {content['style']}")
+                print("📊 Excel file includes Major_Headlines tab with improved filtering")
+            
+            # Show generation summary
+            print("\n" + "="*60)
+            print("📊 GENERATION SUMMARY:")
+            print("="*60)
+            print(f"Style: {content['style']}")
+            print(f"Day: {content['day']}")
+            print(f"Type: {content['type']}")
+            print(f"News articles processed: {content['news_count']}")
+            print(f"Script length: {len(content['script'])} characters")
+            print(f"Word count: {len(content['script'].split())} words")
+            print(f"Motion script length: {len(content['motion_script'])} characters")
+            print(f"API calls made: {generator.call_count}")
         
-        print("\n" + "="*60)
-        print("📊 GENERATION SUMMARY:")
-        print("="*60)
-        print(f"Day: {content['day']}")
-        print(f"Type: {content['type']}")
-        print(f"News articles processed: {content['news_count']}")
-        print(f"Script length: {len(content['script'])} characters")
-        print(f"Word count: {len(content['script'].split())} words")
-        print(f"Motion script length: {len(content['motion_script'])} characters")
-        print(f"API calls made: {generator.call_count}")
-        
-        # Save to Excel
-        filename = generator.save_to_excel(content)
-        if filename:
-            print(f"✅ Content saved to: {filename}")
+        else:
+            print("⚠️ Invalid option selected")
+            return
         
     except Exception as e:
         print(f"❌ Fatal error: {e}")
