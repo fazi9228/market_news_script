@@ -71,6 +71,13 @@ class ProfessionalNewsGenerator:
                 "target_seconds": 80,
                 "tone": "advisory and institutional",
                 "pacing": "measured, authoritative"
+            },
+             "forex_briefing": {
+        "name": "Forex Daily Briefing",
+        "description": "Hard-data-driven analysis of major currency pairs and macroeconomic news.",
+        "target_seconds": 70,
+        "tone": "analytical and data-driven",
+        "pacing": "clear and concise"
             }
         }
 
@@ -715,87 +722,87 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
         
         # Base requirements for all styles
         base_requirements = f"""
-CONTEXT:
-{context}
+    CONTEXT:
+    {context}
 
-SCRIPT REQUIREMENTS:
-- {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
-- EXACTLY 3 STORIES with varied, natural transitions
-- VOICE-FRIENDLY: Use company names, not ticker symbols
-- EXCLUDE: Legal notices, shareholder alerts, class action lawsuits
-- FOCUS: Market movements, earnings, economic policy, sector trends
-- TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum
+    SCRIPT REQUIREMENTS:
+    - {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
+    - EXACTLY 3 STORIES with varied, natural transitions
+    - VOICE-FRIENDLY: Use company names, not ticker symbols
+    - EXCLUDE: Legal notices, shareholder alerts, class action lawsuits
+    - FOCUS: Market movements, earnings, economic policy, sector trends
+    - TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum
 
-SOCIAL POST REQUIREMENTS:
-- 60-90 words, professional LinkedIn/X audience
-- Strong opening, 2-3 bullet points, concluding thought
-- Include 2-3 relevant tickers or figures
-- NO emojis, 3-4 hashtags like #MarketUpdate #Investing
+    SOCIAL POST REQUIREMENTS:
+    - 60-90 words, professional LinkedIn/X audience
+    - Strong opening, 2-3 bullet points, concluding thought
+    - Include 2-3 relevant tickers or figures
+    - NO emojis, 3-4 hashtags like #MarketUpdate #Investing
 
-MOTION SCRIPT (300 chars max):
-- Professional body language directions
-- Opening stance, gestures, transitions, closing
+    MOTION SCRIPT (300 chars max):
+    - Professional body language directions
+    - Opening stance, gestures, transitions, closing
 
-VIDEO CAPTION (60-80 chars):
-- Professional video title with date and key topics
+    VIDEO CAPTION (60-80 chars):
+    - Professional video title with date and key topics
 
-THEME: {theme}
+    THEME: {theme}
 
-Return JSON format:
-{{
-  "script": "script here",
-  "social": "social post here", 
-  "motion": "motion directions here",
-  "caption": "video caption here",
-  "title": "episode title here"
-}}
-"""
+    Return JSON format:
+    {{
+    "script": "script here",
+    "social": "social post here", 
+    "motion": "motion directions here",
+    "caption": "video caption here",
+    "title": "episode title here"
+    }}
+    """
 
         # Style-specific examples and instructions
         if style_key == "classic_daily":
             return f"""Create a Classic Daily Brief script following this EXACT template:
 
-TEMPLATE:
-"Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
-Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
-That's your {current_date} rundown — see you tomorrow!"
+    TEMPLATE:
+    "Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
+    Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
+    That's your {current_date} rundown — see you tomorrow!"
 
-EXAMPLE STYLE:
-"Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
-Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
-And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
-That's your August 20 rundown — see you tomorrow!"
+    EXAMPLE STYLE:
+    "Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
+    Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
+    And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
+    That's your August 20 rundown — see you tomorrow!"
 
-KEY PHRASES TO USE:
-- "That's a potential boost for..."
-- "Investors are watching closely..."
-- "The big question on the street..."
-- Always end with date reference
+    KEY PHRASES TO USE:
+    - "That's a potential boost for..."
+    - "Investors are watching closely..."
+    - "The big question on the street..."
+    - Always end with date reference
 
-{base_requirements}"""
+    {base_requirements}"""
 
         elif style_key == "breaking_alert":
             return f"""Create a Breaking News Alert script following this URGENT template:
 
-TEMPLATE:
-"BREAKING NEWS for your market update. First, [URGENT STORY with immediate impact]. 
-JUST IN — [SECOND BREAKING STORY with dramatic element]. And finally — [THIRD STORY with critical level]. 
-All eyes are on what happens next. That's your breaking update — more as it develops."
+    TEMPLATE:
+    "BREAKING NEWS for your market update. First, [URGENT STORY with immediate impact]. 
+    JUST IN — [SECOND BREAKING STORY with dramatic element]. And finally — [THIRD STORY with critical level]. 
+    All eyes are on what happens next. That's your breaking update — more as it develops."
 
-EXAMPLE STYLE:
-"BREAKING NEWS for your market update. First, the Fed just signaled a surprise policy shift, sending tech stocks tumbling. 
-JUST IN — NVIDIA shares are halted pending a major announcement, sparking sector-wide volatility. 
-And finally — Bitcoin has just breached a critical support level at $115,000. 
-All eyes are on what happens next. That's your breaking update — more as it develops."
+    EXAMPLE STYLE:
+    "BREAKING NEWS for your market update. First, the Fed just signaled a surprise policy shift, sending tech stocks tumbling. 
+    JUST IN — NVIDIA shares are halted pending a major announcement, sparking sector-wide volatility. 
+    And finally — Bitcoin has just breached a critical support level at $115,000. 
+    All eyes are on what happens next. That's your breaking update — more as it develops."
 
-KEY PHRASES TO USE:
-- "BREAKING NEWS"
-- "JUST IN"
-- "sparking sector-wide volatility"
-- "critical support/resistance level"
-- "All eyes are on what happens next"
+    KEY PHRASES TO USE:
+    - "BREAKING NEWS"
+    - "JUST IN"
+    - "sparking sector-wide volatility"
+    - "critical support/resistance level"
+    - "All eyes are on what happens next"
 
-{base_requirements}"""
+    {base_requirements}"""
 
         elif style_key == "weekly_deep":
             # Enhanced weekly deep dive with actual weekly context
@@ -819,244 +826,104 @@ KEY PHRASES TO USE:
             
             return f"""Create a TRUE Weekly Deep Dive script following this ANALYTICAL template:
 
-IMPORTANT: This is a WEEKLY ANALYSIS covering Monday through Friday, NOT daily news.
+    IMPORTANT: This is a WEEKLY ANALYSIS covering Monday through Friday, NOT daily news.
 
-TEMPLATE:
-"Here is your weekly market analysis. The primary catalyst this week was [WEEKLY THEME from context], which [WEEKLY MARKET IMPACT and performance]. 
-In corporate developments, [MAJOR CORPORATE STORY from the week with broader implications]. 
-Looking ahead, the key data point will be [UPCOMING WEEK'S FOCUS]. The street is anticipating [NEXT WEEK'S EXPECTATION]. 
-This has been your weekly market analysis."
+    TEMPLATE:
+    "Here is your weekly market analysis. The primary catalyst this week was [WEEKLY THEME from context], which [WEEKLY MARKET IMPACT and performance]. 
+    In corporate developments, [MAJOR CORPORATE STORY from the week with broader implications]. 
+    Looking ahead, the key data point will be [UPCOMING WEEK'S FOCUS]. The street is anticipating [NEXT WEEK'S EXPECTATION]. 
+    This has been your weekly market analysis."
 
-WEEKLY CONTEXT PROVIDED:
-{weekly_info}
+    WEEKLY CONTEXT PROVIDED:
+    {weekly_info}
 
-WEEKLY LANGUAGE REQUIREMENTS:
-- Use "this week" not "today" 
-- Reference week-long trends: "throughout the week", "over five trading days"
-- Mention weekly performance: "the S&P gained X% for the week"
-- Use past tense for the week's events: "dominated this week", "emerged as"
-- Forward-looking: "heading into next week", "the week ahead"
+    WEEKLY LANGUAGE REQUIREMENTS:
+    - Use "this week" not "today" 
+    - Reference week-long trends: "throughout the week", "over five trading days"
+    - Mention weekly performance: "the S&P gained X% for the week"
+    - Use past tense for the week's events: "dominated this week", "emerged as"
+    - Forward-looking: "heading into next week", "the week ahead"
 
-EXAMPLE WEEKLY STYLE:
-"Here is your weekly market analysis. The primary catalyst this week was Federal Reserve uncertainty, which created sustained volatility across all major indices with the S&P 500 gaining 1.8% for the week despite Tuesday's selloff.
-In corporate developments, the energy sector dominated headlines with three major oil companies reporting record quarterly profits, underscoring the sector's resilience amid geopolitical tensions. 
-Looking ahead, the key data point will be next week's inflation data release. The street is anticipating this could determine the Fed's December policy stance.
-This has been your weekly market analysis."
+    EXAMPLE WEEKLY STYLE:
+    "Here is your weekly market analysis. The primary catalyst this week was Federal Reserve uncertainty, which created sustained volatility across all major indices with the S&P 500 gaining 1.8% for the week despite Tuesday's selloff.
+    In corporate developments, the energy sector dominated headlines with three major oil companies reporting record quarterly profits, underscoring the sector's resilience amid geopolitical tensions. 
+    Looking ahead, the key data point will be next week's inflation data release. The street is anticipating this could determine the Fed's December policy stance.
+    This has been your weekly market analysis."
 
-KEY WEEKLY PHRASES TO USE:
-- "The primary catalyst this week was..."
-- "throughout the trading week"
-- "dominated headlines this week"
-- "over the five-day period"
-- "heading into next week"
-- "This has been your weekly market analysis"
+    KEY WEEKLY PHRASES TO USE:
+    - "The primary catalyst this week was..."
+    - "throughout the trading week"
+    - "dominated headlines this week"
+    - "over the five-day period"
+    - "heading into next week"
+    - "This has been your weekly market analysis"
 
-{base_requirements}"""
-
-        elif style_key == "market_pulse":
-            return f"""Create a Market Pulse script following this ENERGETIC template:
-
-TEMPLATE:
-"Time for your market pulse check! [SECTOR/ASSET] is [ACTION VERB] today on [CATALYST]. 
-Meanwhile, [CONTRASTING STORY] as traders [REACTION]. The mood on the street? [SENTIMENT]. 
-Here's what's driving the action: [KEY FACTORS]. Your market pulse — [CURRENT STATE] with [OUTLOOK]. Keep watching!"
-
-KEY ACTION VERBS TO USE:
-- surging, plunging, rallying, retreating, soaring, tumbling, spiking, diving
-
-KEY PHRASES TO USE:
-- "Time for your market pulse check!"
-- "Meanwhile"
-- "The mood on the street?"
-- "Here's what's driving the action:"
-- "Your market pulse —"
-- "Keep watching!"
-
-TONE: Energetic, rhythmic, engaging with momentum-focused language
-
-{base_requirements}"""
-
-        elif style_key == "strategic_outlook":
-            return f"""Create a Strategic Outlook script following this INSTITUTIONAL template:
-
-TEMPLATE:
-"Your strategic market briefing: [MACRO CONTEXT] is reshaping [MARKET/SECTOR] dynamics. 
-From a strategic standpoint, [INSTITUTIONAL PERSPECTIVE with risk/reward analysis]. 
-On the tactical side, watch for [SPECIFIC LEVELS/EVENTS] as potential inflection points. 
-Our take: [STRATEGIC RECOMMENDATION] while monitoring [KEY RISKS]. Strategic briefing complete — position accordingly."
-
-KEY INSTITUTIONAL PHRASES TO USE:
-- "Your strategic market briefing:"
-- "From a strategic standpoint..."
-- "The risk-reward equation suggests..."
-- "On the tactical side..."
-- "Our take:"
-- "as potential inflection points"
-- "Strategic briefing complete — position accordingly"
-
-TONE: Advisory, measured, institutional with strategic perspective
-
-{base_requirements}"""
-
-        return base_requirements
-        """Build style-specific prompts for different news styles"""
-        
-        current_date = datetime.now().strftime('%B %d')
-        
-        # Base requirements for all styles
-        base_requirements = f"""
-CONTEXT:
-{context}
-
-SCRIPT REQUIREMENTS:
-- {target_seconds} seconds when spoken at news pace (~{target_seconds * 2.5} words)
-- EXACTLY 3 STORIES with varied, natural transitions
-- VOICE-FRIENDLY: Use company names, not ticker symbols
-- EXCLUDE: Legal notices, shareholder alerts, class action lawsuits
-- FOCUS: Market movements, earnings, economic policy, sector trends
-- TARGET LENGTH: Aim for {target_seconds * 2.5} words minimum
-
-SOCIAL POST REQUIREMENTS:
-- 60-90 words, professional LinkedIn/X audience
-- Strong opening, 2-3 bullet points, concluding thought
-- Include 2-3 relevant tickers or figures
-- NO emojis, 3-4 hashtags like #MarketUpdate #Investing
-
-MOTION SCRIPT (300 chars max):
-- Professional body language directions
-- Opening stance, gestures, transitions, closing
-
-VIDEO CAPTION (60-80 chars):
-- Professional video title with date and key topics
-
-THEME: {theme}
-
-Return JSON format:
-{{
-  "script": "script here",
-  "social": "social post here", 
-  "motion": "motion directions here",
-  "caption": "video caption here",
-  "title": "episode title here"
-}}
-"""
-
-        # Style-specific examples and instructions
-        if style_key == "classic_daily":
-            return f"""Create a Classic Daily Brief script following this EXACT template:
-
-TEMPLATE:
-"Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
-Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
-That's your {current_date} rundown — see you tomorrow!"
-
-EXAMPLE STYLE:
-"Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
-Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
-And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
-That's your August 20 rundown — see you tomorrow!"
-
-KEY PHRASES TO USE:
-- "That's a potential boost for..."
-- "Investors are watching closely..."
-- "The big question on the street..."
-- Always end with date reference
-
-{base_requirements}"""
-
-        elif style_key == "breaking_alert":
-            return f"""Create a Breaking News Alert script following this URGENT template:
-
-TEMPLATE:
-"BREAKING NEWS for your market update. First, [URGENT STORY with immediate impact]. 
-JUST IN — [SECOND BREAKING STORY with dramatic element]. And finally — [THIRD STORY with critical level]. 
-All eyes are on what happens next. That's your breaking update — more as it develops."
-
-EXAMPLE STYLE:
-"BREAKING NEWS for your market update. First, the Fed just signaled a surprise policy shift, sending tech stocks tumbling. 
-JUST IN — NVIDIA shares are halted pending a major announcement, sparking sector-wide volatility. 
-And finally — Bitcoin has just breached a critical support level at $115,000. 
-All eyes are on what happens next. That's your breaking update — more as it develops."
-
-KEY PHRASES TO USE:
-- "BREAKING NEWS"
-- "JUST IN"
-- "sparking sector-wide volatility"
-- "critical support/resistance level"
-- "All eyes are on what happens next"
-
-{base_requirements}"""
-
-        elif style_key == "weekly_deep":
-            return f"""Create a Weekly Deep Dive script following this ANALYTICAL template:
-
-TEMPLATE:
-"Here is your weekly market analysis. The primary catalyst this week was [MAJOR THEME], which [MARKET IMPLICATION]. 
-In corporate developments, [COMPANY/SECTOR NEWS with regulatory or strategic context]. 
-Looking ahead, the key data point will be [UPCOMING EVENT]. The street is anticipating [MARKET EXPECTATION]. 
-This has been your weekly market analysis."
-
-EXAMPLE STYLE:
-"Here is your weekly market analysis. The primary catalyst this week was the Federal Reserve's commentary on inflation, which suggests a more dovish stance moving forward. This provided a significant tailwind for growth stocks. 
-In corporate developments, Microsoft's landmark acquisition is now under regulatory scrutiny, raising questions about the deal's future and impacting both companies' valuations. 
-Looking ahead, the key data point will be next week's jobs report. The street is anticipating this will determine the market's direction for the rest of the month. 
-This has been your weekly market analysis."
-
-KEY PHRASES TO USE:
-- "The primary catalyst this week was..."
-- "In corporate developments..."
-- "Looking ahead, the key data point..."
-- "The street is anticipating..."
-- "This provided a significant tailwind/headwind..."
-
-{base_requirements}"""
+    {base_requirements}"""
 
         elif style_key == "market_pulse":
             return f"""Create a Market Pulse script following this ENERGETIC template:
 
-TEMPLATE:
-"Time for your market pulse check! [SECTOR/ASSET] is [ACTION VERB] today on [CATALYST]. 
-Meanwhile, [CONTRASTING STORY] as traders [REACTION]. The mood on the street? [SENTIMENT]. 
-Here's what's driving the action: [KEY FACTORS]. Your market pulse — [CURRENT STATE] with [OUTLOOK]. Keep watching!"
+    TEMPLATE:
+    "Time for your market pulse check! [SECTOR/ASSET] is [ACTION VERB] today on [CATALYST]. 
+    Meanwhile, [CONTRASTING STORY] as traders [REACTION]. The mood on the street? [SENTIMENT]. 
+    Here's what's driving the action: [KEY FACTORS]. Your market pulse — [CURRENT STATE] with [OUTLOOK]. Keep watching!"
 
-KEY ACTION VERBS TO USE:
-- surging, plunging, rallying, retreating, soaring, tumbling, spiking, diving
+    KEY ACTION VERBS TO USE:
+    - surging, plunging, rallying, retreating, soaring, tumbling, spiking, diving
 
-KEY PHRASES TO USE:
-- "Time for your market pulse check!"
-- "Meanwhile"
-- "The mood on the street?"
-- "Here's what's driving the action:"
-- "Your market pulse —"
-- "Keep watching!"
+    KEY PHRASES TO USE:
+    - "Time for your market pulse check!"
+    - "Meanwhile"
+    - "The mood on the street?"
+    - "Here's what's driving the action:"
+    - "Your market pulse —"
+    - "Keep watching!"
 
-TONE: Energetic, rhythmic, engaging with momentum-focused language
+    TONE: Energetic, rhythmic, engaging with momentum-focused language
 
-{base_requirements}"""
+    {base_requirements}"""
+
+        elif style_key == "forex_briefing":
+            return f"""Create a Forex Daily Briefing script following this analytical template:
+
+    TEMPLATE:
+    "Here is your forex daily briefing for {current_date}. The main event driving the markets is [MAJOR ECONOMIC DATA/EVENT] which is causing [IMPACT on a major currency, e.g., the US Dollar].
+    As a result, the [CURRENCY PAIR, e.g., EUR/USD] is currently testing the [KEY LEVEL, e.g., 1.08 support level].
+    Also on our radar, [SECOND STORY, e.g., a central bank statement] is affecting the [ANOTHER CURRENCY, e.g., Japanese Yen]. Looking ahead, traders are now focused on [NEXT MAJOR CATALYST].
+    That's your forex briefing — trade safe."
+
+    CRITICAL INSTRUCTIONS:
+    - The script MUST focus on G7 currencies (USD, EUR, JPY, GBP, CAD, AUD, CHF).
+    - Every story MUST be connected to a specific currency pair movement.
+    - Prioritize hard economic data (CPI, GDP, NFP) over general market news.
+
+    {base_requirements}"""
 
         elif style_key == "strategic_outlook":
             return f"""Create a Strategic Outlook script following this INSTITUTIONAL template:
 
-TEMPLATE:
-"Your strategic market briefing: [MACRO CONTEXT] is reshaping [MARKET/SECTOR] dynamics. 
-From a strategic standpoint, [INSTITUTIONAL PERSPECTIVE with risk/reward analysis]. 
-On the tactical side, watch for [SPECIFIC LEVELS/EVENTS] as potential inflection points. 
-Our take: [STRATEGIC RECOMMENDATION] while monitoring [KEY RISKS]. Strategic briefing complete — position accordingly."
+    TEMPLATE:
+    "Your strategic market briefing: [MACRO CONTEXT] is reshaping [MARKET/SECTOR] dynamics. 
+    From a strategic standpoint, [INSTITUTIONAL PERSPECTIVE with risk/reward analysis]. 
+    On the tactical side, watch for [SPECIFIC LEVELS/EVENTS] as potential inflection points. 
+    Our take: [STRATEGIC RECOMMENDATION] while monitoring [KEY RISKS]. Strategic briefing complete — position accordingly."
 
-KEY INSTITUTIONAL PHRASES TO USE:
-- "Your strategic market briefing:"
-- "From a strategic standpoint..."
-- "The risk-reward equation suggests..."
-- "On the tactical side..."
-- "Our take:"
-- "as potential inflection points"
-- "Strategic briefing complete — position accordingly"
+    KEY INSTITUTIONAL PHRASES TO USE:
+    - "Your strategic market briefing:"
+    - "From a strategic standpoint..."
+    - "The risk-reward equation suggests..."
+    - "On the tactical side..."
+    - "Our take:"
+    - "as potential inflection points"
+    - "Strategic briefing complete — position accordingly"
 
-TONE: Advisory, measured, institutional with strategic perspective
+    TONE: Advisory, measured, institutional with strategic perspective
 
-{base_requirements}"""
-
-        return base_requirements
+    {base_requirements}"""
+        
+        else:
+            # Handle unknown style keys gracefully
+            return base_requirements
 
     def _create_fallback_content_with_style(self, news: List[Dict], day: str, style_key: str) -> Tuple[str, str, str, str, str]:
         """Create style-specific fallback content"""
