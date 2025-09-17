@@ -75,7 +75,7 @@ class ProfessionalNewsGenerator:
              "forex_briefing": {
         "name": "Forex Daily Briefing",
         "description": "Hard-data-driven analysis of major currency pairs and macroeconomic news.",
-        "target_seconds": 70,
+        "target_seconds": 50,
         "tone": "analytical and data-driven",
         "pacing": "clear and concise"
             }
@@ -884,20 +884,28 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
     {base_requirements}"""
 
         elif style_key == "forex_briefing":
-            return f"""Create a Forex Daily Briefing script following this analytical template:
+            return f"""Create a Forex Daily Briefing script focusing on actual currency market impact:
 
-    TEMPLATE:
-    "Here is your forex daily briefing for {current_date}. The main event driving the markets is [MAJOR ECONOMIC DATA/EVENT] which is causing [IMPACT on a major currency, e.g., the US Dollar].
-    As a result, the [CURRENCY PAIR, e.g., EUR/USD] is currently testing the [KEY LEVEL, e.g., 1.08 support level].
-    Also on our radar, [SECOND STORY, e.g., a central bank statement] is affecting the [ANOTHER CURRENCY, e.g., Japanese Yen]. Looking ahead, traders are now focused on [NEXT MAJOR CATALYST].
-    That's your forex briefing — trade safe."
+        CRITICAL INSTRUCTIONS:
+        - Analyze the provided news context for stories that affect major currencies
+        - Focus ONLY on G7 currencies: USD, EUR, JPY, GBP, CAD, AUD, CHF
+        - If economic data is mentioned, explain its currency impact
+        - If no forex-relevant news exists, create a brief summary acknowledging limited forex developments
+        - Use specific currency pair names (EUR/USD, GBP/JPY, etc.) only when justified by the news
+        - Do NOT use placeholder examples or generic statements
 
-    CRITICAL INSTRUCTIONS:
-    - The script MUST focus on G7 currencies (USD, EUR, JPY, GBP, CAD, AUD, CHF).
-    - Every story MUST be connected to a specific currency pair movement.
-    - Prioritize hard economic data (CPI, GDP, NFP) over general market news.
+        TEMPLATE STRUCTURE (adapt based on actual news):
+        "Here is your forex daily briefing for {current_date}. [Analyze actual news for currency impacts]
+        [Connect specific news to currency movements]
+        [Mention any relevant central bank developments]
+        Looking ahead, [mention actual upcoming events if any]. That's your forex briefing — trade safe."
 
-    {base_requirements}"""
+        AVOID:
+        - Generic examples like "testing 1.10 resistance"
+        - Placeholder currency pairs when news doesn't support them
+        - Making up economic data releases not mentioned in context
+
+        {base_requirements}"""
 
         elif style_key == "strategic_outlook":
             return f"""Create a Strategic Outlook script following this INSTITUTIONAL template:
