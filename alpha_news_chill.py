@@ -771,24 +771,32 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
 
         # Style-specific examples and instructions
         if style_key == "classic_daily":
-            return f"""Create a Classic Daily Brief script following this EXACT template:
+            return f"""Create a 'Classic Daily Brief' script that is punchy, insightful, and tells a story about the market today.
 
-    TEMPLATE:
-    "Here's your market update for {current_date}. First up — [STORY 1 with market implication]. 
-    Next — [STORY 2 with investor context]. And finally — [STORY 3 with key question or outlook]. 
-    That's your {current_date} rundown — see you tomorrow!"
+    CRITICAL INSTRUCTIONS:
+    1.  **Find the Narrative:** Don't just list news. Find the connecting theme. Is today about inflation fears? A tech rebound? Geopolitical tension? State this theme upfront.
+    2.  **Answer "So What?":** For each story, immediately explain its impact. Why should a regular investor care? Use phrases that connect news to personal impact (e.g., "which could mean...", "the big risk here is...").
+    3.  **Use a Conversational Hook:** Start with a question or a bold statement, not just "Here's your update."
 
-    EXAMPLE STYLE:
-    "Here's your market update for August 20. First up — a Fed official says staff should be allowed to hold some crypto. That's a potential boost for Ethereum and related markets.
-    Next — High Arctic is making executive management changes. Investors are watching closely since leadership shifts often signal strategy updates.
-    And finally — Bitcoin's under pressure. The big question on the street: is $112K the final bottom?
-    That's your August 20 rundown — see you tomorrow!"
+    TEMPLATE / STRUCTURE:
+    "[Engaging Hook related to the day's theme]. Let's break down what's really moving the markets.
+    First up, the biggest story: [STORY 1, explaining its direct market impact].
+    Next, keep an eye on this: [STORY 2, explaining what it signals for the future].
+    And finally, a move under the radar: [STORY 3, and why it matters].
+    So, the big picture today is [reiterate the main theme]. That's your rundown — see you tomorrow!"
+
+    EXAMPLE STYLE (This is the tone to aim for):
+    "So, is the market finally getting nervous about inflation? Let's break down what's really moving the markets.
+    First up, the biggest story: The Fed just signaled that rate cuts might be further away than we thought, which sent a shockwave through the tech sector.
+    Next, keep an eye on this: Oil prices are spiking above $95 a barrel. For you, that could mean more pain at the gas pump very soon.
+    And finally, a move under the radar: A major corporate Bitcoin purchase just hit the wires, showing big institutions are still betting on crypto long-term.
+    So, the big picture today is caution. The market is weighing inflation risks against corporate confidence. That's your rundown — see you tomorrow!"
 
     KEY PHRASES TO USE:
-    - "That's a potential boost for..."
-    - "Investors are watching closely..."
-    - "The big question on the street..."
-    - Always end with date reference
+    - "Let's break down what's really moving the markets."
+    - "The big picture today is..."
+    - "For you, that could mean..."
+    - "Keep an eye on this..."
 
     {base_requirements}"""
 
