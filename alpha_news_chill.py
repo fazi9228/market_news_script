@@ -35,6 +35,20 @@ class ProfessionalNewsGenerator:
         self.openai_client = OpenAI(api_key=self.openai_key)
         self.call_count = 0
         
+        # Significance Filter Lists
+        self.MAJOR_COMPANIES = [
+            'apple', 'microsoft', 'google', 'amazon', 'tesla', 'nvidia', 'meta', 
+            'netflix', 'intel', 'amd', 'disney', 'nike', 'cocacola', 'pepsi',
+            'jpmorgan', 'goldman sachs', 'boeing', 'ford', 'exxon', 'chevron'
+        ]
+        
+        self.HIGH_IMPACT_KEYWORDS = [
+            'fed', 'federal reserve', 'interest rate', 'inflation', 'gdp', 'cpi',
+            'jobs report', 'unemployment', 'trade war', 'tariffs', 'opec','gold',
+            'market rally', 'market surge', 'market falls', 'record high',
+            'dow', 'nasdaq', 's&p 500', 'oil prices', 'crude oil'
+        ]
+        
         # Style guide definitions
         self.style_guide = {
             "classic_daily": {
@@ -252,18 +266,15 @@ class ProfessionalNewsGenerator:
         
         # STRICT EXCLUSION of company-specific news
         company_exclusions = [
-            # Stock/corporate terms
-            'stock', 'shares', 'corp', 'corporation', 'inc', 'ltd', 'announces', 
-            'reports', 'earnings', 'dividend', 'options', 'split', 'ipo',
-            'if you invested', 'you would have', 'outperformed', 'return',
+            # Focus only on the most spammy corporate actions
+            'announces dividend', 'stock split', 'reverse split', 'ipo',
+            'if you invested', 'you would have', 'outperformed', 
             
-            # Specific gold company names
-            'kinross', 'newmont', 'barrick', 'goldcorp', 'agnico', 'yamana',
-            'eldorado', 'iamgold', 'opus one', 'franco-nevada', 'royal gold',
-            'goldmoney', 'gold reserve', 'gold fields', 'harmony gold',
+            # Keep specific miners if you want, but consider removing them
+            # 'kinross', 'newmont', 'barrick', 
             
-            # Goldman Sachs false positives
-            'goldman sachs', 'goldman', 'gs group', 'investment bank'
+            # VERY IMPORTANT: Remove this as it filters out analyst reports
+            # 'goldman sachs', 'goldman', 'gs group', 'investment bank'
         ]
         
         if any(term in title or term in summary for term in company_exclusions):
@@ -1091,6 +1102,17 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
         ]
         
         if any(term in title for term in strict_exclusions):
+            return False
+        
+        # A story is significant if it's about a major company OR a high-impact event.
+        is_significant = False
+        if any(company in title for company in self.MAJOR_COMPANIES):
+            is_significant = True
+        if any(keyword in title or keyword in summary for keyword in self.HIGH_IMPACT_KEYWORDS):
+            is_significant = True
+
+        # If a story is not about a major name or a major event, we skip it.
+        if not is_significant:
             return False
         
         # POSITIVE INDICATORS for quality financial content
