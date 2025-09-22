@@ -1113,15 +1113,15 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
             return False
         
         # A story is significant if it's about a major company OR a high-impact event.
-        is_significant = False
+        #is_significant = False
         if any(company in title for company in self.MAJOR_COMPANIES):
             is_significant = True
         if any(keyword in title or keyword in summary for keyword in self.HIGH_IMPACT_KEYWORDS):
             is_significant = True
 
         # If a story is not about a major name or a major event, we skip it.
-        if not is_significant:
-            return False
+        #if not is_significant:
+            #return False
         
         # POSITIVE INDICATORS for quality financial content
         quality_indicators = [
