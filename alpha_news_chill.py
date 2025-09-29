@@ -119,7 +119,7 @@ class ProfessionalNewsGenerator:
 
     # ===== Day Modes with Style Support =====
     def _generate_monday(self, style_key):
-        news = self.get_major_headlines(limit=8)
+        news = self._get_high_quality_news_timeframe(limit=8)
         market_data = self._get_market_snapshot()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Monday", "Weekly market open with key developments", style_key
@@ -139,7 +139,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_wednesday(self, style_key):
-        news = self.get_major_headlines(days_back=2, limit=10)
+        news = self._get_high_quality_news_timeframe(days_back=2, limit=10)
         movers = self._get_recent_movers()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Wednesday", "Mid-week market analysis", style_key
@@ -159,7 +159,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_friday(self, style_key):
-        news = self.get_major_headlines(days_back=5, limit=12)
+        news = self._get_high_quality_news_timeframe(days_back=5, limit=12)
         weekly_summary = self._get_weekly_summary()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Friday", "Weekly market wrap-up", style_key
@@ -179,7 +179,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_generic(self, style_key):
-        news = self.get_major_headlines(limit=8)
+        news = self._get_high_quality_news_timeframe(limit=8)
         market_data = self._get_market_snapshot()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, datetime.now().strftime('%A'), "Daily market update", style_key
@@ -404,7 +404,7 @@ class ProfessionalNewsGenerator:
             'jobs report', 'unemployment', 'economic data', 'retail sales',
             
             # Market movements
-            'market rally', 'market surge', 'market falls', 'record high', 'all-time high',
+            'market rally', 'market surge', 'market falls', 'record ', 'all-time high',
             'correction', 'volatility', 'dow', 'nasdaq', 's&p 500', 'index',
             
             # Major earnings (only big companies)
@@ -1482,3 +1482,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
