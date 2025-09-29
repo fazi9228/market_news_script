@@ -159,7 +159,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_friday(self, style_key):
-        news = self._get_high_quality_news_timeframe(days_back=5, limit=12)
+        news = self.get_major_headlines_timeframe(days_back=5, limit=12)
         weekly_summary = self._get_weekly_summary()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Friday", "Weekly market wrap-up", style_key
@@ -1482,5 +1482,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
