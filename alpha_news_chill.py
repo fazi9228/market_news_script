@@ -100,7 +100,7 @@ class ProfessionalNewsGenerator:
         today = datetime.now().strftime('%A')
         print(f"📅 Generating {self.style_guide[style_key]['name']} content for {today}")
 
-        if today == '':
+        if today == 'Monday':
             return self._generate_monday(style_key)
         elif today == 'Wednesday':
             return self._generate_wednesday(style_key)
@@ -159,7 +159,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_friday(self, style_key):
-        news = self.get_major_headlines_timeframe(days_back=5, limit=12)
+        news = self._get_high_quality_news_timeframe(days_back=5, limit=12)
         weekly_summary = self._get_weekly_summary()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Friday", "Weekly market wrap-up", style_key
@@ -404,7 +404,7 @@ class ProfessionalNewsGenerator:
             'jobs report', 'unemployment', 'economic data', 'retail sales',
             
             # Market movements
-            'market rally', 'market surge', 'market falls', 'record ', 'all-time high',
+            'market rally', 'market surge', 'market falls', 'record high', 'all-time high',
             'correction', 'volatility', 'dow', 'nasdaq', 's&p 500', 'index',
             
             # Major earnings (only big companies)
@@ -660,11 +660,6 @@ class ProfessionalNewsGenerator:
         
         # Style-specific system prompt
         system_prompt = f"""You are an expert global market analyst creating content for a sophisticated financial audience. Your primary goal is to identify and report on the most impactful news driving global markets.
-# --- PRIMARY DIRECTIVE ---
-# Strictly adhere to the facts provided in the user's context. 
-# Do not add any information, figures, or events not present in the source material.
-# Your primary goal is to report on the most impactful news driving global markets based ONLY on the data given.
-
 
 PRIORITIZATION HIERARCHY:
 1.  **Top Priority:** Major economic data releases (Inflation/CPI, GDP, Jobs/NFP) from G7 nations.
@@ -776,38 +771,34 @@ CRITICAL: Return ONLY valid JSON with script, social, motion, caption, and title
 
         # Style-specific examples and instructions
         if style_key == "classic_daily":
-            return f"""Create a 'Classic Daily Brief' script that tells the story of today's market naturally and intelligently.
+            return f"""Create a 'Classic Daily Brief' script that is punchy, insightful, and tells a story about the market today.
 
-CRITICAL INSTRUCTIONS:
-1.  **NO TEMPLATES:** Do not use a repetitive structure. Your goal is to create a unique script every day based on the actual news.
-2.  **FIND THE NARRATIVE:** Start by identifying the most important story or theme from the context. Is it inflation? A tech rebound? Geopolitical tension? Lead with that.
-3.  **CONNECT STORIES CAUSALLY:** Don't just list news. Explain how the stories relate. Use natural transitions like "This is putting pressure on...", "Meanwhile, the tech sector is reacting by...", or "This feeds into the broader theme of...".
-4.  **VARY YOUR OPENINGS:** Never start the same way twice. Sometimes begin with a question, sometimes a bold statement, sometimes jump right into the most important event.
-5.  **DO NOT HALLUCINATE AND INVENT ANYTHING , JUST BE A GOOD ENGLISH GUIDE:**
-6.  **END WITH A FORWARD-LOOKING SIGN-OFF:** 
-    Conclude with a brief, consistent sign-off. **Do not summarize the stories.** Instead, use a short, forward-looking phrase. Choose from the following or create a similar one:
-    - "That's the market pulse for today. We'll see you tomorrow."
-    - "Stay ahead of the markets by following for more insights."
-    - "Position accordingly. We'll be back tomorrow with the latest."
-    - "That's your rundown. Trade safe."
+    CRITICAL INSTRUCTIONS:
+    1.  **Find the Narrative:** Don't just list news. Find the connecting theme. Is today about inflation fears? A tech rebound? Geopolitical tension? State this theme upfront.
+    2.  **Answer "So What?":** For each story, immediately explain its impact. Why should a regular investor care? Use phrases that connect news to personal impact (e.g., "which could mean...", "the big risk here is...").
+    3.  **Use a Conversational Hook:** Start with a question or a bold statement, not just "Here's your update."
 
+    TEMPLATE / STRUCTURE:
+    "[Engaging Hook related to the day's theme]. Let's break down what's really moving the markets.
+    First up, the biggest story: [STORY 1, explaining its direct market impact].
+    Next, keep an eye on this: [STORY 2, explaining what it signals for the future].
+    And finally, a move under the radar: [STORY 3, and why it matters].
+    So, the big picture today is [reiterate the main theme]. That's your rundown — see you tomorrow!"
 
-BANNED PHRASES (Using these will result in a poor-quality, robotic script):
-- "Let's break down what's really moving the markets"
-- "First up, the biggest story"
-- "Next, keep an eye on this"
-- "And finally, a move under the radar"
-- "So, the big picture today is"
-- "That's your rundown — see you tomorrow"
+    EXAMPLE STYLE (This is the tone to aim for):
+    "So, is the market finally getting nervous about inflation? Let's break down what's really moving the markets.
+    First up, the biggest story: The Fed just signaled that rate cuts might be further away than we thought, which sent a shockwave through the tech sector.
+    Next, keep an eye on this: Oil prices are spiking above $95 a barrel. For you, that could mean more pain at the gas pump very soon.
+    And finally, a move under the radar: A major corporate Bitcoin purchase just hit the wires, showing big institutions are still betting on crypto long-term.
+    So, the big picture today is caution. The market is weighing inflation risks against corporate confidence. That's your rundown — see you tomorrow!"
 
-EXAMPLES OF GOOD, VARIED OPENINGS (Use this kind of thinking):
-- "The Fed just complicated things for tech investors..."
-- "Oil's pushing ninety dollars a barrel, and that's creating a chain reaction across markets..."
-- "A major development out of the EU is sending ripples through the currency markets this morning..."
-- "Earnings season is revealing a surprising trend in consumer spending..."
+    KEY PHRASES TO USE:
+    - "Let's break down what's really moving the markets."
+    - "The big picture today is..."
+    - "For you, that could mean..."
+    - "Keep an eye on this..."
 
-Your task is to synthesize the top 3 stories from the context into a single, flowing narrative that sounds like a real market analyst, not a robot reading a list.
-{base_requirements}"""
+    {base_requirements}"""
 
         elif style_key == "breaking_alert":
             return f"""Create a Breaking News Alert script following this URGENT template:
@@ -1052,9 +1043,8 @@ Your task is to synthesize the top 3 stories from the context into a single, flo
                             print("\n✅ Sample filtered articles:")
                             for i, article in enumerate(filtered_articles[:3]):
                                 print(f"{i+1}. {article['title'][:80]}...")
-                                print(f"   Source: {article['source']}") 
-                                
-                    filtered_articles.sort(key=lambda x: self._get_priority_score(x), reverse=True)
+                                print(f"   Source: {article['source']}")
+                    
                     return filtered_articles[:limit]
                 else:
                     print(f"❌ No 'feed' key in response. Available keys: {list(data.keys())}")
@@ -1482,7 +1472,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
