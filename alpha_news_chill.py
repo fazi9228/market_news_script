@@ -100,7 +100,7 @@ class ProfessionalNewsGenerator:
         today = datetime.now().strftime('%A')
         print(f"📅 Generating {self.style_guide[style_key]['name']} content for {today}")
 
-        if today == 'Monday':
+        if today == '':
             return self._generate_monday(style_key)
         elif today == 'Wednesday':
             return self._generate_wednesday(style_key)
@@ -119,7 +119,7 @@ class ProfessionalNewsGenerator:
 
     # ===== Day Modes with Style Support =====
     def _generate_monday(self, style_key):
-        news = self._get_high_quality_news_timeframe(limit=8)
+        news = self._get_high_quality_news(limit=8)
         market_data = self._get_market_snapshot()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, "Monday", "Weekly market open with key developments", style_key
@@ -1482,4 +1482,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
