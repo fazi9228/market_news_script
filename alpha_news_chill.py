@@ -179,7 +179,7 @@ class ProfessionalNewsGenerator:
         }
 
     def _generate_generic(self, style_key):
-        news = self._get_high_quality_news_timeframe(limit=8)
+        news = self._get_high_quality_news(limit=8)
         market_data = self._get_market_snapshot()
         script, social_post, motion_script, video_caption, episode_title = self._generate_content_with_style(
             news, datetime.now().strftime('%A'), "Daily market update", style_key
@@ -1482,6 +1482,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
