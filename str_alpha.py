@@ -468,6 +468,8 @@ with col2:
         with col_info4:
             st.metric("Style", content.get('style', 'Classic Daily Brief'))
         
+        st.info("ℹ️ The script below is generated from the most recent news. For a broader high impact news view, please see the 'Major Headlines' tab.")
+        
         # Content Tabs
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["🎙️ Script", "📱 Social", "🎬 Motion", "📺 Caption", "🎯 Title"])
 
@@ -524,4 +526,5 @@ with col1:
     st.caption("💡 Tip: This app guarantees Gold and Bitcoin coverage in headlines, even from previous days if today's news is quiet.")
 with col2:
     st.caption("🎨 New: 5 distinct content styles for different presentation needs - select your style in the Control Panel!")
+
 
